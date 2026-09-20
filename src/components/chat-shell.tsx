@@ -174,7 +174,7 @@ function Composer({
           <ModeSwitch mode={mode} onChange={setMode} />
         </PromptInputTools>
         {value.trim() ? (
-          <PromptInputSubmit className="rounded-full bg-primary text-primary-foreground" tooltip="Send message">
+          <PromptInputSubmit className="rounded-full bg-primary text-primary-foreground">
             <ArrowUp />
           </PromptInputSubmit>
         ) : (

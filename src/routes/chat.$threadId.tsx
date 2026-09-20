@@ -20,5 +20,5 @@ export const Route = createFileRoute("/chat/$threadId")({
 function ChatRoute() {
   const { threadId } = Route.useParams();
   const { prompt } = Route.useSearch();
-  return <ChatShell initialPrompt={prompt} threadId={threadId} />;
+  return <ChatShell {...(prompt ? { initialPrompt: prompt } : {})} threadId={threadId} />;
 }
