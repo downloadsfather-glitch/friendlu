@@ -28,7 +28,6 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
-  Code2,
   FileText,
   Image,
   Menu,
@@ -42,7 +41,6 @@ import {
   Settings,
   Sun,
   UserRound,
-  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
