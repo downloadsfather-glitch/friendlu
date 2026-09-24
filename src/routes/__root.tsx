@@ -78,9 +78,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Amani AI" },
+      { title: "Friendlu AI" },
       { name: "description", content: "A friendly workspace for thinking and building with AI." },
-      { name: "author", content: "Amani AI" },
+      { name: "author", content: "Friendlu AI" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
