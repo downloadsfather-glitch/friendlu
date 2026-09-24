@@ -271,7 +271,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
 
   const reply = (text: string, mode: Mode) => {
     if (building) {
-      const next = templates[(templates.indexOf(template) + 1) % templates.length];
+      const next = templates[(templates.indexOf(template) + 1) % templates.length]!;
       setTemplate(next);
       return msg("assistant", `Done — I updated the preview with a **${next}** layout. Anything else to tweak?`);
     }
