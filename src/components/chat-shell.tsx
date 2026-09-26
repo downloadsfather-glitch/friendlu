@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import {
-  ArrowUp, Check, ChevronDown, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
+  ArrowUp, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
   Moon, MousePointer2, Paperclip, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCw, Rocket, Search, Settings, Smartphone, Sun, Tablet, Trash2, UserRound, Wrench, X,
 } from "lucide-react";
@@ -49,7 +49,7 @@ const isBuildIntent = (t: string) => /\b(build|app|website|site|landing|dashboar
 let nextId = 1;
 const msg = (role: Msg["role"], text: string, offer = false): Msg => ({ id: nextId++, role, text, offer });
 
-function BrandMark() {
+export function BrandMark() {
   return (
     <div className="flex items-center gap-3">
       <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm">F</div>
@@ -58,7 +58,7 @@ function BrandMark() {
   );
 }
 
-function useTheme() {
+export function useTheme() {
   const [dark, setDark] = useState(false);
   useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
   const toggle = () => {
@@ -82,7 +82,7 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
-function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, mode: Mode) => void }) {
+export function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, mode: Mode) => void }) {
   const [value, setValue] = useState("");
   const [mode, setMode] = useState<Mode>("plan");
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -118,6 +118,21 @@ function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, m
     </PromptInput>
   );
 }
+
+export function PillStrip({ items, onPick }: { items: string[]; onPick: (p: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const by = (d: number) => ref.current?.scrollBy({ left: d, behavior: "smooth" });
+  return (
+    <div className="flex items-center gap-1">
+      <Button aria-label="Scroll suggestions left" className="shrink-0 rounded-full" onClick={() => by(-180)} size="icon-sm" type="button" variant="ghost"><ChevronLeft /></Button>
+      <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto" ref={ref}>
+        {items.map((p) => <Button className="h-9 shrink-0 rounded-full" key={p} onClick={() => onPick(p)} size="sm" type="button" variant="outline">{p}</Button>)}
+      </div>
+      <Button aria-label="Scroll suggestions right" className="shrink-0 rounded-full" onClick={() => by(180)} size="icon-sm" type="button" variant="ghost"><ChevronRight /></Button>
+    </div>
+  );
+}
+
 
 function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; onClose: () => void; onToggle: () => void; open: boolean }) {
   const { dark, toggle } = useTheme();
@@ -271,6 +286,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [building, setBuilding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [chatCompact, setChatCompact] = useState(true);
+  const [chatHidden, setChatHidden] = useState(false);
   const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>("desktop");
   const [template, setTemplate] = useState<Template>("Landing");
@@ -319,11 +335,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
       <ChatMessages key={threadId} messages={messages} onOffer={onOffer} />
       <div className="shrink-0 bg-background px-3 pb-3 sm:px-6 sm:pb-5">
         <div className="mx-auto max-w-3xl">
-          {building && (
-            <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-              {pills.map((p) => <Button className="h-9 shrink-0 rounded-full" key={p} onClick={() => send(p)} size="sm" variant="outline">{p}</Button>)}
-            </div>
-          )}
+          {building && <div className="mb-2"><PillStrip items={pills} onPick={(p) => send(p)} /></div>}
           <Composer onSend={send} />
         </div>
         {!building && <p className="mt-2 text-center text-xs text-muted-foreground">Friendlu AI can make mistakes. Check important information.</p>}
@@ -376,9 +388,19 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
           chatColumn
         ) : (
           <div className="flex min-h-0 flex-1">
-            <div className={cn("relative min-h-0 flex-col transition-[width] duration-200 md:flex md:shrink-0 md:border-r md:border-border", chatCompact ? "md:w-[320px]" : "md:w-[500px]", mobileView === "chat" ? "flex w-full" : "hidden")}>
-              <Button aria-label={chatCompact ? "Expand chat panel" : "Shrink chat panel"} className="absolute right-2 top-2 z-20 hidden md:inline-flex" onClick={() => setChatCompact((current) => !current)} size="icon-sm" variant="secondary">{chatCompact ? <PanelRightOpen /> : <PanelRightClose />}</Button>
-              {chatColumn}
+            <div className={cn("relative min-h-0 flex-col transition-[width] duration-200 md:flex md:shrink-0 md:border-r md:border-border", chatHidden ? "md:w-12" : chatCompact ? "md:w-[320px]" : "md:w-[500px]", mobileView === "chat" ? "flex w-full" : "hidden")}>
+              {chatHidden ? (
+                <div className="hidden flex-col items-center gap-2 pt-2 md:flex">
+                  <Button aria-label="Show chat" onClick={() => setChatHidden(false)} size="icon-sm" variant="secondary"><PanelLeftOpen /></Button>
+                  <MessageSquare className="size-4 text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="absolute right-2 top-2 z-20 hidden gap-1 md:flex">
+                  <Button aria-label={chatCompact ? "Expand chat panel" : "Shrink chat panel"} onClick={() => setChatCompact((current) => !current)} size="icon-sm" variant="secondary">{chatCompact ? <PanelRightOpen /> : <PanelRightClose />}</Button>
+                  <Button aria-label="Hide chat for full preview" onClick={() => setChatHidden(true)} size="icon-sm" variant="secondary"><PanelLeftClose /></Button>
+                </div>
+              )}
+              <div className={cn("flex min-h-0 flex-1 flex-col", chatHidden && "md:hidden")}>{chatColumn}</div>
             </div>
             <div className={cn("min-h-0 min-w-0 flex-1 flex-col md:flex md:bg-muted md:p-3", mobileView === "preview" ? "flex" : "hidden")}>
               <div className="hidden items-center gap-2 pb-2 md:flex">
