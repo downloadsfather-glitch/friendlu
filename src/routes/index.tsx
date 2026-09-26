@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { HomeScreen } from "@/components/chat-shell";
+import { LandingPage } from "@/components/landing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,5 +12,5 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: HomeScreen,
+  component: LandingPage,
 });
