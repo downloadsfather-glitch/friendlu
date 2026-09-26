@@ -31,7 +31,7 @@ export function LandingPage() {
   const ask = (text: string) => setPending(text);
   const finish = () => {
     const p = pending ?? "";
-    window.location.href = p ? `/chat/new?prompt=${encodeURIComponent(p)}` : "/chat/new";
+    window.location.href = p ? `/chat/${Date.now().toString(36)}?prompt=${encodeURIComponent(p)}` : "/dashboard";
   };
 
   return (
