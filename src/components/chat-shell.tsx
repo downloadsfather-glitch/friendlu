@@ -49,7 +49,7 @@ const isBuildIntent = (t: string) => /\b(build|app|website|site|landing|dashboar
 let nextId = 1;
 const msg = (role: Msg["role"], text: string, offer = false): Msg => ({ id: nextId++, role, text, offer });
 
-function BrandMark() {
+export function BrandMark() {
   return (
     <div className="flex items-center gap-3">
       <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm">F</div>
@@ -58,7 +58,7 @@ function BrandMark() {
   );
 }
 
-function useTheme() {
+export function useTheme() {
   const [dark, setDark] = useState(false);
   useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
   const toggle = () => {
@@ -82,7 +82,7 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
-function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, mode: Mode) => void }) {
+export function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, mode: Mode) => void }) {
   const [value, setValue] = useState("");
   const [mode, setMode] = useState<Mode>("plan");
   const ref = useRef<HTMLTextAreaElement>(null);
