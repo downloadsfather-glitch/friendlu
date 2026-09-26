@@ -144,7 +144,7 @@ function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; o
         <Button aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="hidden lg:inline-flex" onClick={onToggle} size="icon" variant="ghost">{collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}</Button>
       </div>
       <div className="space-y-1 px-3 pt-2">
-        <Button aria-label="New chat" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/"; }} variant="outline"><Plus /> <span className={cn(collapsed && "lg:hidden")}>New chat</span></Button>
+        <Button aria-label="New chat" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/dashboard"; }} variant="outline"><Plus /> <span className={cn(collapsed && "lg:hidden")}>New chat</span></Button>
         <Button aria-label="Search chats" className={cn("h-11 w-full justify-start font-normal", collapsed && "lg:justify-center lg:px-0")} variant="ghost"><Search /> <span className={cn(collapsed && "lg:hidden")}>Search chats</span></Button>
       </div>
       <nav className={cn("mt-5 min-h-0 flex-1 overflow-y-auto px-3", collapsed && "lg:hidden")} aria-label="Chat history">
