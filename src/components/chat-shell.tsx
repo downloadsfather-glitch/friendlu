@@ -295,7 +295,6 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [menuOpen, setMenuOpen] = useState(false);
   const [building, setBuilding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [chatCompact, setChatCompact] = useState(true);
   const [chatHidden, setChatHidden] = useState(false);
   const [hubOpen, setHubOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
