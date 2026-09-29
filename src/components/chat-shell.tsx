@@ -295,7 +295,6 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [menuOpen, setMenuOpen] = useState(false);
   const [building, setBuilding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [chatCompact, setChatCompact] = useState(true);
   const [chatHidden, setChatHidden] = useState(false);
   const [hubOpen, setHubOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
@@ -400,7 +399,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
           chatColumn
         ) : (
           <div className="flex min-h-0 flex-1">
-            <div className={cn("relative min-h-0 flex-col transition-[width] duration-200 md:flex md:shrink-0 md:border-r md:border-border", chatHidden ? "md:w-12" : chatCompact ? "md:w-[320px]" : "md:w-[500px]", mobileView === "chat" ? "flex w-full" : "hidden")}>
+            <div className={cn("relative min-h-0 flex-col transition-[width] duration-200 md:flex md:shrink-0 md:border-r md:border-border", chatHidden ? "md:w-12" : "md:w-[44%] md:min-w-[420px] md:max-w-[640px]", mobileView === "chat" ? "flex w-full" : "hidden")}>
               {chatHidden ? (
                 <div className="hidden flex-col items-center gap-2 pt-2 md:flex">
                   <Button aria-label="Show chat" onClick={() => setChatHidden(false)} size="icon-sm" variant="secondary"><PanelLeftOpen /></Button>
