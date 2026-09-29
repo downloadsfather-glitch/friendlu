@@ -3,8 +3,9 @@ import { useState } from "react";
 import { BrandMark, Composer, PillStrip, useTheme } from "@/components/chat-shell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronDown, Folder, Menu, Moon, Plug, Plus, Search, Settings, Sun, X } from "lucide-react";
+import { ChevronDown, Folder, LayoutTemplate, Menu, Moon, Plug, Plus, Search, Settings, Sun, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CreditPill, WorkspaceMenu } from "@/components/app-extras";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -45,29 +46,28 @@ function Dashboard() {
   const sidebar = (
     <div className="flex h-full flex-col gap-2 p-3">
       <div className="flex items-center justify-between">
-        <button className="flex h-11 items-center gap-2 rounded-lg px-2 hover:bg-sidebar-accent" type="button">
-          <span className="grid size-7 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">D</span>
-          <span className="text-sm font-medium">Dfather's Workspace</span><ChevronDown className="size-4" />
-        </button>
+        <WorkspaceMenu />
         <Button aria-label="Close menu" className="lg:hidden" onClick={() => setOpen(false)} size="icon" variant="ghost"><X /></Button>
       </div>
       <Button className="h-11 justify-start" onClick={() => go("/dashboard")}><Plus /> New</Button>
       <Button className="h-11 justify-start" onClick={() => document.getElementById("project-search")?.focus()} variant="ghost"><Search /> Search</Button>
-      <Button className="h-11 justify-start" onClick={() => setToolsOpen(true)} variant="ghost"><Plug /> Connectors & Tools</Button>
-      <Button className="h-11 justify-start" onClick={() => setTab("mine")} variant="ghost"><Folder /> Projects</Button>
+      <Button className="h-11 justify-start" onClick={() => go("/tools")} variant="ghost"><Plug /> Connectors & Tools</Button>
+      <Button className="h-11 justify-start" onClick={() => go("/projects")} variant="ghost"><Folder /> Projects</Button>
+      <Button className="h-11 justify-start" onClick={() => go("/templates")} variant="ghost"><LayoutTemplate /> Templates</Button>
       <p className="mt-3 px-2 text-xs font-medium text-muted-foreground">Recents</p>
       <div className="flex-1 overflow-y-auto">
         {recents.map((r) => <Button className="h-10 w-full justify-start font-normal" key={r.id} onClick={() => go(`/chat/${r.id}`)} variant="ghost">{r.name}</Button>)}
       </div>
-      <div className="rounded-xl border border-border bg-card p-3">
+      <CreditPill />
+      <button className="rounded-xl border border-border bg-card p-3 text-left hover:border-primary" onClick={() => go("/pricing")} type="button">
         <p className="text-sm font-semibold">Upgrade to Pro <span className="ml-1 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">Pro</span></p>
         <p className="mt-1 text-xs text-muted-foreground">Unlock custom .co.ke domains & live M-Pesa STK push</p>
-      </div>
+      </button>
       <div className="flex items-center gap-2 px-1">
-        <span className="relative grid size-9 place-items-center rounded-full bg-secondary text-sm font-semibold">D<span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-sidebar bg-primary" /></span>
-        <span className="flex-1 text-sm font-medium">Dfather</span>
+        <button aria-label="Account" className="contents" onClick={() => go("/account")} type="button"><span className="relative grid size-9 place-items-center rounded-full bg-secondary text-sm font-semibold">D<span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-sidebar bg-primary" /></span>
+        <span className="flex-1 text-left text-sm font-medium">Dfather</span></button>
         <Button aria-label="Toggle theme" onClick={toggle} size="icon" variant="ghost">{dark ? <Sun /> : <Moon />}</Button>
-        <Button aria-label="Settings" size="icon" variant="ghost"><Settings /></Button>
+        <Button aria-label="Settings" onClick={() => go("/settings")} size="icon" variant="ghost"><Settings /></Button>
       </div>
     </div>
   );
@@ -90,7 +90,7 @@ function Dashboard() {
         <section className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-10 text-center">
           <button className="rounded-full border border-border bg-card px-4 py-1.5 text-sm hover:border-primary" onClick={() => setToolsOpen(true)} type="button">✨ New: M-Pesa Express & WhatsApp Commerce live →</button>
           <h1 className="mt-6 text-4xl font-bold sm:text-5xl">Got an idea, Dfather?</h1>
-          <div className="mt-8 w-full text-left"><Composer large onSend={start} /></div>
+          <div className="mt-8 w-full text-left"><Composer large onSend={start} placeholder="Ask Friendlu to create an app to..." /></div>
           <div className="mt-4 w-full"><PillStrip items={starters} onPick={start} /></div>
         </section>
         <section className="relative mx-auto mb-4 w-full max-w-5xl px-4">
@@ -100,7 +100,7 @@ function Dashboard() {
               {([["mine", "My projects"], ["recent", "Recently viewed"], ["templates", "Templates"]] as const).map(([k, l]) => (
                 <Button className={cn("h-10", tab !== k && "text-muted-foreground")} key={k} onClick={() => setTab(k)} variant={tab === k ? "secondary" : "ghost"}>{l}</Button>
               ))}
-              <Button className="ml-auto h-10" onClick={() => setTab("mine")} variant="link">Browse all →</Button>
+              <Button className="ml-auto h-10" onClick={() => go("/templates")} variant="link">Browse all →</Button>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {shown.map((c) => (

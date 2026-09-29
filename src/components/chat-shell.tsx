@@ -27,8 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { CreditPill, ProjectHub, SuggestPageMenu, WorkspaceMenu } from "@/components/app-extras";
 import {
-  ArrowUp, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
+  ArrowUp, Check, FolderOpen, LayoutTemplate, ChevronDown, ChevronLeft, ChevronRight, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
   Moon, MousePointer2, Paperclip, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCw, Rocket, Search, Settings, Smartphone, Sun, Tablet, Trash2, UserRound, Wrench, X,
 } from "lucide-react";
@@ -101,7 +102,7 @@ export function Composer({ large, onSend, placeholder }: { large?: boolean; onSe
       }}
     >
 
-      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} onChange={(e) => setValue(e.target.value)} placeholder="Ask anything, or describe what you want to build..." ref={ref} value={value} />
+      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} onChange={(e) => setValue(e.target.value)} placeholder={placeholder ?? "Ask anything, or describe what you want to build..."} ref={ref} value={value} />
       <PromptInputFooter className="px-3 pb-3">
         <PromptInputTools>
           <PromptInputActionMenu>
@@ -121,6 +122,7 @@ export function Composer({ large, onSend, placeholder }: { large?: boolean; onSe
         )}
       </PromptInputFooter>
     </PromptInput>
+    </div>
   );
 }
 
