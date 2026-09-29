@@ -27,8 +27,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { CreditPill, ProjectHub, SuggestPageMenu, WorkspaceMenu } from "@/components/app-extras";
 import {
-  ArrowUp, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
+  ArrowUp, Check, FolderOpen, LayoutTemplate, ChevronDown, ChevronLeft, ChevronRight, Copy, Edit3, FileText, Gauge, Image, Menu, MessageSquare, Mic, Monitor,
   Moon, MousePointer2, Paperclip, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pencil,
   Plus, RotateCw, Rocket, Search, Settings, Smartphone, Sun, Tablet, Trash2, UserRound, Wrench, X,
 } from "lucide-react";
@@ -82,21 +83,26 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
-export function Composer({ large, onSend }: { large?: boolean; onSend: (text: string, mode: Mode) => void }) {
+export function Composer({ large, onSend, placeholder }: { large?: boolean; onSend: (text: string, mode: Mode) => void; placeholder?: string }) {
   const [value, setValue] = useState("");
   const [mode, setMode] = useState<Mode>("plan");
+  const [sending, setSending] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   return (
+    <div className={cn("rounded-[26px] p-[2px] transition-all", sending && "animate-rainbow shadow-lg")}>
     <PromptInput
-      className={cn("border-border bg-card shadow-[0_16px_50px_var(--composer-shadow)]", large && "rounded-xl")}
+      className="rounded-[24px] border-border bg-card shadow-[0_16px_50px_var(--composer-shadow)] [&_[data-slot=input-group]]:rounded-[24px]"
       onSubmit={({ text }) => {
         const t = text.trim();
         if (!t) return;
+        setSending(true);
+        setTimeout(() => setSending(false), 1200);
         onSend(t, mode);
         setValue("");
       }}
     >
-      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} onChange={(e) => setValue(e.target.value)} placeholder="Ask anything, or describe what you want to build..." ref={ref} value={value} />
+
+      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} onChange={(e) => setValue(e.target.value)} placeholder={placeholder ?? "Ask anything, or describe what you want to build..."} ref={ref} value={value} />
       <PromptInputFooter className="px-3 pb-3">
         <PromptInputTools>
           <PromptInputActionMenu>
@@ -116,6 +122,7 @@ export function Composer({ large, onSend }: { large?: boolean; onSend: (text: st
         )}
       </PromptInputFooter>
     </PromptInput>
+    </div>
   );
 }
 
@@ -143,9 +150,12 @@ function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; o
         <Button aria-label="Close menu" className="lg:hidden" onClick={onClose} size="icon" variant="ghost"><PanelLeftClose /></Button>
         <Button aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="hidden lg:inline-flex" onClick={onToggle} size="icon" variant="ghost">{collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}</Button>
       </div>
+      <div className="px-3"><WorkspaceMenu collapsed={collapsed} /></div>
       <div className="space-y-1 px-3 pt-2">
         <Button aria-label="New chat" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/dashboard"; }} variant="outline"><Plus /> <span className={cn(collapsed && "lg:hidden")}>New chat</span></Button>
-        <Button aria-label="Search chats" className={cn("h-11 w-full justify-start font-normal", collapsed && "lg:justify-center lg:px-0")} variant="ghost"><Search /> <span className={cn(collapsed && "lg:hidden")}>Search chats</span></Button>
+        {([["/projects", "Projects", FolderOpen], ["/templates", "Templates", LayoutTemplate], ["/tools", "Tools", Wrench]] as const).map(([href, label, Icon]) => (
+          <Button aria-label={label} className={cn("h-11 w-full justify-start font-normal", collapsed && "lg:justify-center lg:px-0")} key={href} onClick={() => { window.location.href = href; }} variant="ghost"><Icon /> <span className={cn(collapsed && "lg:hidden")}>{label}</span></Button>
+        ))}
       </div>
       <nav className={cn("mt-5 min-h-0 flex-1 overflow-y-auto px-3", collapsed && "lg:hidden")} aria-label="Chat history">
         <p className="mb-2 px-2 text-xs font-medium text-muted-foreground">Recent</p>
@@ -158,10 +168,10 @@ function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; o
         </div>
       </nav>
       <div className="border-t border-sidebar-border p-3">
+        <div className="mb-2"><CreditPill collapsed={collapsed} /></div>
         <Button aria-label={dark ? "Light mode" : "Dark mode"} className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={toggle} variant="ghost">{dark ? <Sun /> : <Moon />} <span className={cn(collapsed && "lg:hidden")}>{dark ? "Light mode" : "Dark mode"}</span></Button>
-        <Button aria-label="Tools" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} variant="ghost"><Wrench /> <span className={cn(collapsed && "lg:hidden")}>Tools</span></Button>
-        <Button aria-label="Settings" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} variant="ghost"><Settings /> <span className={cn(collapsed && "lg:hidden")}>Settings</span></Button>
-        <Button aria-label="Account" className={cn("h-12 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} variant="ghost">
+        <Button aria-label="Settings" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/settings"; }} variant="ghost"><Settings /> <span className={cn(collapsed && "lg:hidden")}>Settings</span></Button>
+        <Button aria-label="Account" className={cn("h-12 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/account"; }} variant="ghost">
           <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">AK</span>
           <span className={cn("min-w-0 text-left", collapsed && "lg:hidden")}><span className="block truncate text-sm">Alex Kimani</span><span className="block text-xs font-normal text-muted-foreground">Free plan</span></span>
         </Button>
@@ -287,6 +297,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [chatCompact, setChatCompact] = useState(true);
   const [chatHidden, setChatHidden] = useState(false);
+  const [hubOpen, setHubOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"chat" | "preview">("chat");
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>("desktop");
   const [template, setTemplate] = useState<Template>("Landing");
@@ -379,7 +390,8 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                   <Button className={cn("h-9 rounded-full px-4 capitalize", mobileView === v && "bg-background shadow-sm")} key={v} onClick={() => setMobileView(v)} size="sm" type="button" variant="ghost">{v}</Button>
                 ))}
               </div>
-              <Button aria-label="Build overview dashboard" size="icon" variant="ghost"><Gauge /></Button>
+              <Button aria-label="Project hub" onClick={() => setHubOpen(true)} size="icon" variant="ghost"><Gauge /></Button>
+              <ProjectHub open={hubOpen} onOpenChange={setHubOpen} />
               <Button className="hidden bg-blue-600 text-white hover:bg-blue-700 md:inline-flex" onClick={() => setPublishOpen(true)}><Rocket /> Publish</Button>
             </div>
           )}
@@ -396,8 +408,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                 </div>
               ) : (
                 <div className="absolute right-2 top-2 z-20 hidden gap-1 md:flex">
-                  <Button aria-label={chatCompact ? "Expand chat panel" : "Shrink chat panel"} onClick={() => setChatCompact((current) => !current)} size="icon-sm" variant="secondary">{chatCompact ? <PanelRightOpen /> : <PanelRightClose />}</Button>
-                  <Button aria-label="Hide chat for full preview" onClick={() => setChatHidden(true)} size="icon-sm" variant="secondary"><PanelLeftClose /></Button>
+                  <Button aria-label="Full preview" onClick={() => setChatHidden(true)} size="icon-sm" variant="secondary"><PanelLeftClose /></Button>
                 </div>
               )}
               <div className={cn("flex min-h-0 flex-1 flex-col", chatHidden && "md:hidden")}>{chatColumn}</div>
@@ -405,6 +416,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
             <div className={cn("min-h-0 min-w-0 flex-1 flex-col md:flex md:bg-muted md:p-3", mobileView === "preview" ? "flex" : "hidden")}>
               <div className="hidden items-center gap-2 pb-2 md:flex">
                 {templates.map((t) => <Button className="h-8" key={t} onClick={() => setTemplate(t)} size="sm" variant={t === template ? "secondary" : "ghost"}>{t}</Button>)}
+                <SuggestPageMenu onPick={(p) => send(p, "build")} />
                 <div className="ml-auto flex items-center rounded-md border border-border bg-background p-0.5" aria-label="Preview device">
                   {([
                     ["desktop", Monitor, "Desktop preview"],
