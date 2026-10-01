@@ -50,13 +50,10 @@ function Dashboard() {
         <Button aria-label="Close menu" className="lg:hidden" onClick={() => setOpen(false)} size="icon" variant="ghost"><X /></Button>
       </div>
       <Button className="h-11 justify-start" onClick={() => go("/dashboard")}><Plus /> New</Button>
-      <Button className="h-11 justify-start" onClick={() => document.getElementById("project-search")?.focus()} variant="ghost"><Search /> Search</Button>
-      <Button className="h-11 justify-start" onClick={() => go("/tools")} variant="ghost"><Plug /> Connectors & Tools</Button>
       <Button className="h-11 justify-start" onClick={() => go("/projects")} variant="ghost"><Folder /> Projects</Button>
-      <Button className="h-11 justify-start" onClick={() => go("/templates")} variant="ghost"><LayoutTemplate /> Templates</Button>
       <p className="mt-3 px-2 text-xs font-medium text-muted-foreground">Recents</p>
       <div className="flex-1 overflow-y-auto">
-        {recents.map((r) => <Button className="h-10 w-full justify-start font-normal" key={r.id} onClick={() => go(`/chat/${r.id}`)} variant="ghost">{r.name}</Button>)}
+        {recents.slice(0, 3).map((r) => <Button className="h-10 w-full justify-start font-normal" key={r.id} onClick={() => go(`/chat/${r.id}`)} variant="ghost">{r.name}</Button>)}
       </div>
       <CreditPill />
       <button className="rounded-xl border border-border bg-card p-3 text-left hover:border-primary" onClick={() => go("/pricing")} type="button">
