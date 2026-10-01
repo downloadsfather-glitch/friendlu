@@ -16,6 +16,7 @@ function Account() {
   return (
     <PageFrame subtitle="Your personal details and security." title="Account">
       <div className="grid max-w-3xl gap-4">
+        <Button className="h-11 w-fit" onClick={() => { window.location.href = "/"; }} variant="outline">← Back to home</Button>
         <Card title="Profile">
           <div className="flex items-center gap-3"><span className="grid size-14 place-items-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">D</span><Button variant="outline">Change photo</Button></div>
           <input aria-label="Name" className={inputCls} defaultValue="Dfather" />
@@ -33,6 +34,10 @@ function Account() {
           {["Chrome on Windows · Nairobi · now", "Safari on iPhone · Mombasa · 2 days ago"].map((s, i) => <div className="flex items-center justify-between text-sm" key={s}>{s}{i > 0 && <Button onClick={() => toast("Device signed out")} size="sm" variant="ghost">Sign out</Button>}</div>)}
         </Card>
         <Button className="h-11 w-fit" onClick={() => toast.success("Account saved")}>Save changes</Button>
+        <Card title="Session">
+          <p className="text-sm text-muted-foreground">Sign out of Friendlu on this device.</p>
+          <Button className="h-11 w-fit" onClick={() => { toast("Signed out"); setTimeout(() => { window.location.href = "/?signin=1"; }, 600); }} variant="destructive">Sign out</Button>
+        </Card>
       </div>
     </PageFrame>
   );
