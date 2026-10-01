@@ -34,9 +34,48 @@ import {
   Plus, RotateCw, Rocket, Search, Settings, Smartphone, Sun, Tablet, Trash2, UserRound, Wrench, X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Eye, LogOut, ScanSearch } from "lucide-react";
+import { toast } from "sonner";
 
 type Mode = "plan" | "build";
-type Msg = { id: number; role: "user" | "assistant"; text: string; offer?: boolean };
+type Status = "planning" | "building" | "built";
+type Category = "tour" | "portfolio" | "corporate" | "clinic" | "store" | "custom";
+type Msg = { id: number; role: "user" | "assistant"; text: string; offer?: boolean; questions?: Category | undefined; done?: boolean };
+
+const detect = (t: string): Category => {
+  const s = t.toLowerCase();
+  if (/safari|tour|travel|hotel|lodge|itinerar/.test(s)) return "tour";
+  if (/portfolio|student|cv|resume|freelanc/.test(s)) return "portfolio";
+  if (/logistic|freight|company|corporate|consult|firm/.test(s)) return "corporate";
+  if (/clinic|dental|wellness|doctor|salon|spa|appointment|booking/.test(s)) return "clinic";
+  if (/shop|store|boutique|fashion|catalog|e-?commerce|sell/.test(s)) return "store";
+  return "custom";
+};
+const LABEL: Record<Category, string> = { tour: "Tour & Safari agency", portfolio: "Personal portfolio", corporate: "Company website", clinic: "Clinic & bookings", store: "Online store", custom: "Business website" };
+const QUESTIONS: Record<Category, { q: string; options: string[] }[]> = {
+  tour: [{ q: "Which trips do you sell most?", options: ["Maasai Mara", "Diani beach", "Amboseli", "Day trips"] }, { q: "How do guests pay?", options: ["20% M-Pesa deposit", "Card in USD", "Pay on arrival"] }, { q: "Main audience?", options: ["Local travellers", "International tourists", "Both"] }],
+  portfolio: [{ q: "What do you want to show?", options: ["Coding projects", "Design work", "Writing"] }, { q: "Main goal?", options: ["Get a job", "Get clients", "Internship"] }],
+  corporate: [{ q: "What should visitors do?", options: ["Request a quote", "Call us", "Book a meeting"] }, { q: "Key sections?", options: ["Services", "Fleet / projects", "Team"] }],
+  clinic: [{ q: "How do patients book?", options: ["Online calendar", "WhatsApp", "Call"] }, { q: "Services offered?", options: ["Dental", "Physio", "General checkups"] }],
+  store: [{ q: "What do you sell?", options: ["Clothes", "Electronics", "Beauty", "Food"] }, { q: "How do customers pay?", options: ["M-Pesa", "Card", "Cash on delivery"] }],
+  custom: [{ q: "What's the main goal?", options: ["Get customers", "Take bookings", "Sell online"] }, { q: "Who are your customers?", options: ["Locals", "Global", "Both"] }],
+};
+const PLAN: Record<Category, string[]> = {
+  tour: ["Home with hero photo and top packages", "Package pages with itinerary and price", "Booking form with deposit"],
+  portfolio: ["About me hero", "Project case studies", "Contact & CV download"],
+  corporate: ["Services overview", "Quote request form", "About & contact"],
+  clinic: ["Services & prices", "Appointment booking", "WhatsApp desk & location"],
+  store: ["Product catalog", "Cart & checkout", "Order confirmation"],
+  custom: ["Home page", "Services", "Contact form"],
+};
+const TWEAKS: Record<Category, string[]> = {
+  tour: ["Add TripAdvisor badge", "Add WhatsApp inquiry button", "Add currency switcher KES/USD"],
+  portfolio: ["Add GitHub links", "Add CV download button", "Add testimonials"],
+  corporate: ["Add quote calculator", "Add client logos", "Add WhatsApp chat"],
+  clinic: ["Add opening hours", "Add Google Maps location", "Add patient reviews"],
+  store: ["Add size guide", "Add M-Pesa checkout", "Add product reviews"],
+  custom: ["Add WhatsApp button", "Add testimonials", "Improve the design"],
+};
 
 const history = [
   { id: "design-a-dashboard", title: "Design a clean dashboard" },
@@ -153,14 +192,14 @@ function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; o
       <div className="px-3"><WorkspaceMenu collapsed={collapsed} /></div>
       <div className="space-y-1 px-3 pt-2">
         <Button aria-label="New chat" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/dashboard"; }} variant="outline"><Plus /> <span className={cn(collapsed && "lg:hidden")}>New chat</span></Button>
-        {([["/projects", "Projects", FolderOpen], ["/templates", "Templates", LayoutTemplate], ["/tools", "Tools", Wrench]] as const).map(([href, label, Icon]) => (
+        {([["/projects", "Projects", FolderOpen]] as const).map(([href, label, Icon]) => (
           <Button aria-label={label} className={cn("h-11 w-full justify-start font-normal", collapsed && "lg:justify-center lg:px-0")} key={href} onClick={() => { window.location.href = href; }} variant="ghost"><Icon /> <span className={cn(collapsed && "lg:hidden")}>{label}</span></Button>
         ))}
       </div>
       <nav className={cn("mt-5 min-h-0 flex-1 overflow-y-auto px-3", collapsed && "lg:hidden")} aria-label="Chat history">
         <p className="mb-2 px-2 text-xs font-medium text-muted-foreground">Recent</p>
         <div className="space-y-1">
-          {history.map((item) => (
+          {history.slice(0, 3).map((item) => (
             <Button className="h-10 w-full justify-start overflow-hidden px-2 font-normal" key={item.id} onClick={() => { window.location.href = `/chat/${item.id}`; }} variant="ghost">
               <MessageSquare className="shrink-0" /><span className="truncate">{item.title}</span>
             </Button>
@@ -170,7 +209,7 @@ function Sidebar({ collapsed, onClose, onToggle, open }: { collapsed: boolean; o
       <div className="border-t border-sidebar-border p-3">
         <div className="mb-2"><CreditPill collapsed={collapsed} /></div>
         <Button aria-label={dark ? "Light mode" : "Dark mode"} className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={toggle} variant="ghost">{dark ? <Sun /> : <Moon />} <span className={cn(collapsed && "lg:hidden")}>{dark ? "Light mode" : "Dark mode"}</span></Button>
-        <Button aria-label="Settings" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/settings"; }} variant="ghost"><Settings /> <span className={cn(collapsed && "lg:hidden")}>Settings</span></Button>
+        <Button aria-label="Sign out" className={cn("h-11 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/?signin=1"; }} variant="ghost"><LogOut /> <span className={cn(collapsed && "lg:hidden")}>Sign out</span></Button>
         <Button aria-label="Account" className={cn("h-12 w-full justify-start", collapsed && "lg:justify-center lg:px-0")} onClick={() => { window.location.href = "/account"; }} variant="ghost">
           <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">AK</span>
           <span className={cn("min-w-0 text-left", collapsed && "lg:hidden")}><span className="block truncate text-sm">Alex Kimani</span><span className="block text-xs font-normal text-muted-foreground">Free plan</span></span>
@@ -238,7 +277,27 @@ function PublishSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ChatMessages({ messages, onOffer }: { messages: Msg[]; onOffer: (build: boolean) => void }) {
+function QuestionCard({ category, onDone }: { category: Category; onDone: (a: string[]) => void }) {
+  const qs = QUESTIONS[category];
+  const [picks, setPicks] = useState<string[]>(() => qs.map(() => ""));
+  const set = (i: number, v: string) => setPicks((p) => p.map((x, j) => (j === i ? v : x)));
+  return (
+    <div className="mt-3 space-y-4 rounded-2xl border border-border bg-card p-4">
+      {qs.map((q, i) => (
+        <div key={q.q}>
+          <p className="mb-2 text-sm font-semibold">{q.q}</p>
+          <div className="flex flex-wrap gap-2">
+            {q.options.map((o) => <Button className="h-11" key={o} onClick={() => set(i, o)} type="button" variant={picks[i] === o ? "default" : "outline"}>{o}</Button>)}
+          </div>
+          <input aria-label={`Custom answer: ${q.q}`} className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm" onChange={(e) => set(i, e.target.value)} placeholder="Custom…" value={q.options.includes(picks[i] ?? "") ? "" : picks[i]} />
+        </div>
+      ))}
+      <Button className="h-11" disabled={picks.some((p) => !p.trim())} onClick={() => onDone(picks)}><Check /> Create my plan</Button>
+    </div>
+  );
+}
+
+function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak }: { messages: Msg[]; onOffer: (build: boolean) => void; onAnswers: (a: string[]) => void; onCheck: () => void; onScan: () => void; onTweak: (p: string) => void }) {
   return (
     <Conversation className="min-h-0">
       <ConversationContent className="mx-auto w-full max-w-3xl gap-7 px-4 py-8 sm:px-6">
@@ -246,10 +305,18 @@ function ChatMessages({ messages, onOffer }: { messages: Msg[]; onOffer: (build:
           <Message from={m.role} key={m.id}>
             <MessageContent className="text-base leading-7">
               <MessageResponse>{m.text}</MessageResponse>
+              {m.questions && <QuestionCard category={m.questions} onDone={onAnswers} />}
               {m.offer && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button className="h-11" onClick={() => onOffer(true)}><Rocket /> Start building</Button>
-                  <Button className="h-11" onClick={() => onOffer(false)} variant="outline">Keep planning</Button>
+                  <Button className="h-11" onClick={() => onOffer(true)}><Rocket /> Start building app</Button>
+                  <Button className="h-11" onClick={() => onOffer(false)} variant="outline"><Pencil /> Tweak details</Button>
+                </div>
+              )}
+              {m.done && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button className="h-11" onClick={onCheck}><Eye /> Check my preview</Button>
+                  <Button className="h-11" onClick={onScan} variant="outline"><ScanSearch /> Scan for issues</Button>
+                  <span className="sr-only"><button onClick={() => onTweak("")} type="button" /></span>
                 </div>
               )}
             </MessageContent>
@@ -293,7 +360,6 @@ export function HomeScreen() {
 
 export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: string; threadId: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [building, setBuilding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [chatHidden, setChatHidden] = useState(false);
   const [hubOpen, setHubOpen] = useState(false);
@@ -305,31 +371,69 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [projectName, setProjectName] = useState("Nairobi Electronics Shop");
   const [projectNameDraft, setProjectNameDraft] = useState("Nairobi Electronics Shop");
   const [renaming, setRenaming] = useState(false);
+  const [status, setStatusRaw] = useState<Status>("planning");
+  const building = status !== "planning";
+  const [category, setCategory] = useState<Category>(() => detect(initialPrompt));
+  const [asked, setAsked] = useState(Boolean(initialPrompt));
   const [messages, setMessages] = useState<Msg[]>(() =>
     initialPrompt
-      ? [msg("user", initialPrompt), isBuildIntent(initialPrompt) ? msg("assistant", "That sounds like a great project. **Do you want to build your app?**", true) : msg("assistant", "Happy to help! Could you share a bit more about your goal and who it's for?")]
-      : [msg("assistant", "Hi, I'm Friendlu. What are we working on today?")]
+      ? [msg("user", initialPrompt), { ...msg("assistant", `Love it — a **${LABEL[detect(initialPrompt)]}** project. A few quick taps so I get it right:`), questions: detect(initialPrompt) }]
+      : [msg("assistant", "Hi, I'm Friendlu. What business are we building today?")]
   );
+  const key = `friendlu-project-${threadId}`;
+  const setStatus = (s: Status, c: Category = category) => {
+    setStatusRaw(s);
+    try { localStorage.setItem(key, JSON.stringify({ status: s === "building" ? "built" : s, category: c })); } catch { /* ignore */ }
+  };
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) ?? "null") as { status: Status; category: Category } | null;
+      if (saved?.status === "built" && !initialPrompt) {
+        setStatusRaw("built"); setCategory(saved.category); setSidebarCollapsed(true);
+        if (window.innerWidth < 768) setMobileView("preview");
+        setMessages([msg("assistant", "Welcome back! Your app preview is ready. What should we change next?")]);
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
-  const reply = (text: string, mode: Mode) => {
+  const reply = (text: string, mode: Mode): Msg => {
     if (building) {
       const next = templates[(templates.indexOf(template) + 1) % templates.length] ?? "Landing";
       setTemplate(next);
-      return msg("assistant", `Done — I updated the preview with a **${next}** layout. Anything else to tweak?`);
+      return msg("assistant", `Done — I applied **${text}** and refreshed the preview. Anything else to tweak?`);
     }
-    if (mode === "build" || isBuildIntent(text)) return msg("assistant", "I can make that. **Do you want to build your app?**", true);
-    return msg("assistant", "Good question. Here's a quick plan:\n\n1. Clarify the goal\n2. Outline key steps\n3. Decide what to build first\n\nWhat detail should we start with?");
+    if (!asked && (mode === "build" || isBuildIntent(text) || detect(text) !== "custom")) {
+      const c = detect(text);
+      setCategory(c); setAsked(true);
+      return { ...msg("assistant", `Great — a **${LABEL[c]}** project. A few quick taps so I get it right:`), questions: c };
+    }
+    return msg("assistant", "Noted. I've added that to your plan. **Ready to build?**", true);
   };
 
   const send = (text: string, mode: Mode = "plan") => setMessages((c) => [...c, msg("user", text), reply(text, mode)]);
 
-  const onOffer = (build: boolean) => {
-    setMessages((c) => [...c.map((m) => ({ ...m, offer: false })), build ? msg("assistant", "Building your first version now… Your preview is ready on the right. Try a suggestion below.") : msg("assistant", "Sure, let's keep planning. What features matter most?")]);
-    if (build) {
-      setBuilding(true);
-      setSidebarCollapsed(true);
-    }
+  const onAnswers = (answers: string[]) => {
+    setMessages((c) => [
+      ...c.map((m) => ({ ...m, questions: undefined })),
+      msg("user", answers.join(" · ")),
+      msg("assistant", `Here's your plan for a **${LABEL[category]}**:\n\n${PLAN[category].map((p, i) => `${i + 1}. ${p}`).join("\n")}\n${answers.map((a) => `- ${a}`).join("\n")}\n\nShall I start building?`, true),
+    ]);
   };
+
+  const onOffer = (build: boolean) => {
+    setMessages((c) => [...c.map((m) => ({ ...m, offer: false })), build ? msg("assistant", "🔨 Building your first version… laying out pages, adding your content and styling.") : msg("assistant", "Sure — tell me what you'd like to change in the plan.")]);
+    if (!build) return;
+    setStatus("building"); setSidebarCollapsed(true);
+    setTimeout(() => {
+      setStatus("built");
+      setMessages((c) => [...c, { ...msg("assistant", "✅ Your app is ready! Have a look, then try a quick tweak below."), done: true }]);
+      if (window.innerWidth < 768) toast("Your preview is ready", { action: { label: "Check my preview", onClick: () => setMobileView("preview") } });
+    }, 2500);
+  };
+
+  const onCheck = () => { setChatHidden(false); setMobileView("preview"); toast.success("Here's your live preview"); };
+  const onScan = () => { toast.loading("Scanning for issues…", { id: "scan" }); setTimeout(() => toast.success("No critical issues · 2 suggestions: add page titles & compress images", { id: "scan" }), 1500); };
 
   const saveProjectName = () => {
     const nextName = projectNameDraft.trim();
@@ -342,10 +446,10 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
 
   const chatColumn = (
     <>
-      <ChatMessages key={threadId} messages={messages} onOffer={onOffer} />
+      <ChatMessages key={threadId} messages={messages} onAnswers={onAnswers} onCheck={onCheck} onOffer={onOffer} onScan={onScan} onTweak={(p) => send(p)} />
       <div className="shrink-0 bg-background px-3 pb-3 sm:px-6 sm:pb-5">
-        <div className="mx-auto max-w-3xl">
-          {building && <div className="mb-2"><PillStrip items={pills} onPick={(p) => send(p)} /></div>}
+        <div className={cn("mx-auto", status === "planning" ? "max-w-2xl" : "max-w-3xl")}>
+          {status === "built" && <div className="mb-2"><PillStrip items={TWEAKS[category]} onPick={(p) => send(p)} /></div>}
           <Composer onSend={send} />
         </div>
         {!building && <p className="mt-2 text-center text-xs text-muted-foreground">Friendlu AI can make mistakes. Check important information.</p>}
@@ -395,7 +499,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
             </div>
           )}
         </header>
-        {!building ? (
+        {status === "planning" ? (
           chatColumn
         ) : (
           <div className="flex min-h-0 flex-1">

@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrandMark, Composer, PillStrip, useTheme } from "@/components/chat-shell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Globe, Mail, MessageCircle, Moon, Phone, Sparkles, Sun, Wallet, Wand2, Download } from "lucide-react";
 
-const starters = [
-  "🇰🇪 E-commerce with M-Pesa & WhatsApp Checkout",
-  "💰 Chama & SACCO Savings Dividend Tracker",
-  "🌍 Global SaaS Landing Page with Stripe & KES pricing",
-  "🚚 CBD Courier & Upcountry Delivery Dispatch",
-  "🧾 KRA eTIMS & PDF Receipt Generator",
+export const starters = [
+  "Safari & Tour Agency (Mara packages, 3-day itinerary & 20% deposit)",
+  "Student Tech Portfolio (Project case studies, GitHub links & CV download)",
+  "Logistics & Freight Company (Instant quote calculator & fleet showcase)",
+  "Dental & Wellness Clinic (Online appointment booking & WhatsApp desk)",
+  "Boutique Fashion Brand (Catalog, size guide & M-Pesa checkout)",
 ];
 
 const showcase = [
@@ -28,6 +28,7 @@ const features = [
 export function LandingPage() {
   const { dark, toggle } = useTheme();
   const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("signin")) setPending(""); }, []);
   const ask = (text: string) => setPending(text);
   const finish = () => {
     const p = pending ?? "";

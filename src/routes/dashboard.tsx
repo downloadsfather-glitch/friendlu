@@ -3,7 +3,8 @@ import { useState } from "react";
 import { BrandMark, Composer, PillStrip, useTheme } from "@/components/chat-shell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronDown, Folder, LayoutTemplate, Menu, Moon, Plug, Plus, Search, Settings, Sun, X } from "lucide-react";
+import { Folder, LogOut, Menu, Moon, Plus, Sun, X } from "lucide-react";
+import { starters } from "@/components/landing";
 import { cn } from "@/lib/utils";
 import { CreditPill, WorkspaceMenu } from "@/components/app-extras";
 
@@ -29,7 +30,6 @@ const recents = [
   { id: "ruaka-grocery", name: "Ruaka Fresh Grocery" },
 ];
 const templates = ["M-Pesa Store", "Chama Ledger", "Boda Delivery Tracker", "SaaS Boilerplate"];
-const starters = ["Accept M-Pesa payments", "Chama member ledger", "WhatsApp order cart", "Salon booking with SMS"];
 const tools = ["M-Pesa Daraja", "WhatsApp Commerce", "KRA eTIMS", "Africa's Talking SMS", "Stripe"];
 const go = (path: string) => { window.location.href = path; };
 const start = (text: string) => go(`/chat/${Date.now().toString(36)}?prompt=${encodeURIComponent(text)}`);
@@ -50,13 +50,10 @@ function Dashboard() {
         <Button aria-label="Close menu" className="lg:hidden" onClick={() => setOpen(false)} size="icon" variant="ghost"><X /></Button>
       </div>
       <Button className="h-11 justify-start" onClick={() => go("/dashboard")}><Plus /> New</Button>
-      <Button className="h-11 justify-start" onClick={() => document.getElementById("project-search")?.focus()} variant="ghost"><Search /> Search</Button>
-      <Button className="h-11 justify-start" onClick={() => go("/tools")} variant="ghost"><Plug /> Connectors & Tools</Button>
       <Button className="h-11 justify-start" onClick={() => go("/projects")} variant="ghost"><Folder /> Projects</Button>
-      <Button className="h-11 justify-start" onClick={() => go("/templates")} variant="ghost"><LayoutTemplate /> Templates</Button>
       <p className="mt-3 px-2 text-xs font-medium text-muted-foreground">Recents</p>
       <div className="flex-1 overflow-y-auto">
-        {recents.map((r) => <Button className="h-10 w-full justify-start font-normal" key={r.id} onClick={() => go(`/chat/${r.id}`)} variant="ghost">{r.name}</Button>)}
+        {recents.slice(0, 3).map((r) => <Button className="h-10 w-full justify-start font-normal" key={r.id} onClick={() => go(`/chat/${r.id}`)} variant="ghost">{r.name}</Button>)}
       </div>
       <CreditPill />
       <button className="rounded-xl border border-border bg-card p-3 text-left hover:border-primary" onClick={() => go("/pricing")} type="button">
@@ -67,7 +64,7 @@ function Dashboard() {
         <button aria-label="Account" className="contents" onClick={() => go("/account")} type="button"><span className="relative grid size-9 place-items-center rounded-full bg-secondary text-sm font-semibold">D<span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-sidebar bg-primary" /></span>
         <span className="flex-1 text-left text-sm font-medium">Dfather</span></button>
         <Button aria-label="Toggle theme" onClick={toggle} size="icon" variant="ghost">{dark ? <Sun /> : <Moon />}</Button>
-        <Button aria-label="Settings" onClick={() => go("/settings")} size="icon" variant="ghost"><Settings /></Button>
+        <Button aria-label="Sign out" onClick={() => go("/?signin=1")} size="icon" variant="ghost"><LogOut /></Button>
       </div>
     </div>
   );
