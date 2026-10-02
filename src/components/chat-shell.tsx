@@ -1,5 +1,6 @@
 "use client";
 
+import { BuildingAnimation, DemoSite, SUMMARY, ThinkingBlock } from "@/components/demo-sites";
 import {
   Conversation,
   ConversationContent,
@@ -40,7 +41,7 @@ import { toast } from "sonner";
 type Mode = "plan" | "build";
 type Status = "planning" | "building" | "built";
 type Category = "tour" | "portfolio" | "corporate" | "clinic" | "store" | "custom";
-type Msg = { id: number; role: "user" | "assistant"; text: string; offer?: boolean; questions?: Category | undefined; done?: boolean };
+type Msg = { id: number; role: "user" | "assistant"; text: string; offer?: boolean; questions?: Category | undefined; done?: boolean; thinking?: Category };
 
 const detect = (t: string): Category => {
   const s = t.toLowerCase();
@@ -305,6 +306,7 @@ function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak }
           <Message from={m.role} key={m.id}>
             <MessageContent className="text-base leading-7">
               <MessageResponse>{m.text}</MessageResponse>
+              {m.thinking && <ThinkingBlock category={m.thinking} />}
               {m.questions && <QuestionCard category={m.questions} onDone={onAnswers} />}
               {m.offer && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -427,9 +429,9 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
     setStatus("building"); setSidebarCollapsed(true);
     setTimeout(() => {
       setStatus("built");
-      setMessages((c) => [...c, { ...msg("assistant", "✅ Your app is ready! Have a look, then try a quick tweak below."), done: true }]);
+      setMessages((c) => [...c, { ...msg("assistant", `✅ Your app is ready!\n\n**What I built:** ${SUMMARY[category]}\n\n- Responsive on phone, tablet and desktop\n- Every button and form works in the preview\n- M-Pesa payment flow ready to connect`), done: true, thinking: category }]);
       if (window.innerWidth < 768) toast("Your preview is ready", { action: { label: "Check my preview", onClick: () => setMobileView("preview") } });
-    }, 2500);
+    }, 4800);
   };
 
   const onCheck = () => { setChatHidden(false); setMobileView("preview"); toast.success("Here's your live preview"); };
@@ -532,7 +534,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
               <div className="min-h-0 flex-1 overflow-hidden md:flex md:items-center md:justify-center md:overflow-auto md:rounded-xl md:border md:border-border md:bg-secondary md:p-4 md:shadow-sm">
                 <div className={cn("relative h-full min-h-0 overflow-hidden bg-background transition-[width,border-radius] duration-200", previewDevice === "desktop" && "w-full", previewDevice === "tablet" && "w-[768px] max-w-full rounded-[24px] border-[10px] border-foreground/80 shadow-xl", previewDevice === "mobile" && "w-[390px] max-w-full rounded-[34px] border-[8px] border-foreground/80 pb-2 shadow-xl")}>
                   {previewDevice === "mobile" && <div className="relative flex h-8 items-center justify-between bg-background px-5 text-[10px] font-semibold"><span>9:41</span><span className="absolute left-1/2 top-0 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-foreground" /><span>5G&nbsp; 100%</span></div>}
-                  <div className={cn("h-full min-h-0", previewDevice === "mobile" && "h-[calc(100%-2rem)]")}><MockSite reloadKey={reloadKey} template={template} /></div>
+                  <div className={cn("h-full min-h-0", previewDevice === "mobile" && "h-[calc(100%-2rem)]")}>{status === "building" ? <BuildingAnimation /> : <DemoSite category={category} key={reloadKey} />}</div>
                 </div>
               </div>
               <div className="flex h-16 shrink-0 items-center gap-1 border-t border-border bg-card px-3 md:hidden">
