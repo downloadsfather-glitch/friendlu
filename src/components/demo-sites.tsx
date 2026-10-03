@@ -132,7 +132,7 @@ function TourSite() {
       <div className="grid gap-4 p-5 sm:grid-cols-3">
         {PACKAGES.map((p, i) => (
           <div className="rounded-xl border border-border bg-card p-4" key={p.name}>
-            <div className="h-24 rounded-lg bg-gradient-to-br from-chart-4/50 to-primary/40" />
+            <img alt={p.name} className="h-28 w-full rounded-lg object-cover" loading="lazy" src={IMG.tour[i % 4]} />
             <h3 className="mt-3 font-semibold">{p.name}</h3>
             <p className="text-sm text-muted-foreground">{p.days} days · from {price(p.kes)}</p>
             <Button className="mt-3 h-10 w-full" onClick={() => setBook(i)}>Book Safari</Button>
@@ -171,9 +171,9 @@ function StoreSite() {
       <div className="px-5 py-8"><h1 className="text-3xl font-bold">New drop: Nairobi Streets</h1><p className="text-muted-foreground">Free delivery in Nairobi over KES 3,000.</p></div>
       <div className="flex gap-2 px-5">{["All", "Tops", "Bottoms", "Jackets"].map((f) => <Button key={f} onClick={() => setFilter(f)} size="sm" variant={filter === f ? "default" : "outline"}>{f}</Button>)}</div>
       <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
-        {PRODUCTS.filter((p) => filter === "All" || p.c === filter).map((p) => (
+        {PRODUCTS.filter((p) => filter === "All" || p.c === filter).map((p, i) => (
           <div className="rounded-xl border border-border bg-card p-3" key={p.n}>
-            <div className="aspect-square rounded-lg bg-gradient-to-br from-secondary to-primary/30" />
+            <img alt={p.n} className="aspect-square w-full rounded-lg object-cover" loading="lazy" src={IMG.store[i % 4]} />
             <p className="mt-2 text-sm font-medium">{p.n}</p><p className="text-sm text-muted-foreground">KES {p.p.toLocaleString()}</p>
             <Button className="mt-2 h-9 w-full" onClick={() => { setCart((c) => ({ ...c, [p.n]: (c[p.n] ?? 0) + 1 })); toast.success(`${p.n} added to cart`); }} size="sm">Add to Cart</Button>
           </div>
@@ -209,7 +209,7 @@ function PortfolioSite() {
       <div className="grid gap-3 p-6 sm:grid-cols-2">
         {PROJECTS.filter((p) => tag === "All" || p.t === tag).map((p) => (
           <button className="rounded-xl border border-border bg-card p-4 text-left hover:border-primary" key={p.n} onClick={() => toast(`Opening live demo: ${p.n}`)} type="button">
-            <div className="h-20 rounded-lg bg-gradient-to-r from-primary/30 to-chart-2/30" /><p className="mt-2 font-medium">{p.n}</p><p className="text-xs text-muted-foreground">{p.t} · View live demo →</p>
+            <img alt={p.n} className="h-24 w-full rounded-lg object-cover" loading="lazy" src={IMG.portfolio[PROJECTS.indexOf(p) % 4]} /><p className="mt-2 font-medium">{p.n}</p><p className="text-xs text-muted-foreground">{p.t} · View live demo →</p>
           </button>
         ))}
       </div>
@@ -280,7 +280,78 @@ function CorporateSite() {
   );
 }
 
-export function DemoSite({ category }: { category: DemoCategory }) {
-  const Site = { tour: TourSite, store: StoreSite, portfolio: PortfolioSite, clinic: ClinicSite, corporate: CorporateSite, custom: StoreSite }[category];
-  return <div className="relative h-full overflow-y-auto bg-background animate-in fade-in duration-700"><Site /></div>;
+const u = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=70`;
+export const IMG: Record<Exclude<DemoCategory, "custom">, string[]> = {
+  tour: [u("photo-1516426122078-c23e76319801"), u("photo-1547471080-7cc2caa01a7e"), u("photo-1489392191049-fc10c97e64b6"), u("photo-1523805009345-7448845a9e53")],
+  store: [u("photo-1445205170230-053b83016050"), u("photo-1490481651871-ab68de25d43d"), u("photo-1441986300917-64674bd600d8"), u("photo-1483985988355-763728e1935b")],
+  clinic: [u("photo-1519494026892-80bbd2d6fd0d"), u("photo-1576091160399-112ba8d25d1d"), u("photo-1586773860418-d37222d8fce3"), u("photo-1631217868264-e5b90bb7e133")],
+  corporate: [u("photo-1586528116311-ad8dd3c8310d"), u("photo-1601584115197-04ecc0da31d7"), u("photo-1494412574643-ff11b0a5c1c3"), u("photo-1553413077-190dd305871c")],
+  portfolio: [u("photo-1517694712202-14dd9538aa97"), u("photo-1498050108023-c5249f4df085"), u("photo-1555066931-4365d14bab8c"), u("photo-1461749280684-dccba630e2f6")],
+};
+
+export const CONNECTORS = [
+  { id: "mpesa", name: "M-Pesa Daraja STK Push", chip: "🟢 M-Pesa STK", field: "Paybill / Till number" },
+  { id: "whatsapp", name: "WhatsApp Cloud Ordering", chip: "💬 WhatsApp Orders", field: "WhatsApp business number" },
+  { id: "pesapal", name: "Pesapal Checkout", chip: "💳 Pesapal", field: "Consumer key" },
+  { id: "etims", name: "KRA eTIMS Invoicing", chip: "🧾 eTIMS", field: "KRA PIN" },
+  { id: "sendy", name: "Sendy Courier Dispatch", chip: "🚚 Sendy Courier", field: "API key" },
+] as const;
+
+const INFO: Record<Exclude<DemoCategory, "custom">, { brand: string; hero: string; sub: string; svcTab: string; bookTab: string; services: [string, string][]; about: string }> = {
+  tour: { brand: "Savannah Mara Expeditions", hero: "Wake up in the wild.", sub: "Small-group safaris across Kenya, from the Mara to the coast.", svcTab: "Packages", bookTab: "Book", services: [["Game drives", "4x4 cruisers with pop-up roofs and expert guides."], ["Hot-air balloons", "Sunrise flights over the Maasai Mara."], ["Tented camps", "Luxury canvas camps by the river."], ["Coast escapes", "Diani beach add-ons after safari."]], about: "Founded in Narok by local guides with 15 years in the bush. KATO-licensed, eco-certified and proudly Kenyan." },
+  store: { brand: "Kiko Urban Apparel", hero: "Nairobi streetwear, made local.", sub: "Kitenge, kikoy and modern fits — delivered same day in Nairobi.", svcTab: "Catalog", bookTab: "Order", services: [["Kitenge collection", "Bold African prints for every day."], ["Kikoy essentials", "Light coastal fabrics for warm days."], ["Studio basics", "Minimal tees, cargos and denim."], ["Custom tailoring", "Made-to-measure in 5 days."]], about: "Started in a Gikomba stall, now a studio in Westlands. Every piece is cut and sewn by Kenyan tailors." },
+  clinic: { brand: "Apex Family Wellness", hero: "Family care, booked in 30 seconds.", sub: "Doctors, dentists and physios in Westlands — NHIF & insurance accepted.", svcTab: "Services", bookTab: "Book", services: [["Consultations", "General doctors, same-day slots."], ["Pharmacy", "In-house pharmacy, open late."], ["Dental care", "Cleaning, fillings and whitening."], ["Physiotherapy", "Sports and recovery sessions."]], about: "A family clinic serving Nairobi since 2012, with 12 specialists and modern, clean consultation rooms." },
+  corporate: { brand: "SwiftFreight Kenya", hero: "Cargo across Kenya, on time.", sub: "Road freight, warehousing and last-mile delivery from Nairobi.", svcTab: "Services", bookTab: "Get quote", services: [["Road freight", "Daily trucks to Mombasa, Kisumu and Eldoret."], ["Warehousing", "Secure storage in Industrial Area."], ["Fleet tracking", "Live GPS updates on every load."], ["Last-mile", "Vans for city deliveries."]], about: "120 trucks, 40 vans and a 24/7 control room. Trusted by 300+ Kenyan businesses." },
+  portfolio: { brand: "Brian Otieno", hero: "I build useful software for African users.", sub: "Full Stack & AI Engineer based in Nairobi.", svcTab: "Projects", bookTab: "Hire me", services: [["Web apps", "React, TypeScript and Supabase."], ["AI tools", "Chatbots and LLM features."], ["Mobile UI", "Clean, fast mobile designs."], ["Open source", "300+ GitHub contributions this year."]], about: "Computer Science student at JKUAT. I love turning local problems into simple apps people actually use." },
+};
+
+export function DemoSite({ category, connectors = [] }: { category: DemoCategory; connectors?: string[] }) {
+  const cat = category === "custom" ? "store" : category;
+  const Site = { tour: TourSite, store: StoreSite, portfolio: PortfolioSite, clinic: ClinicSite, corporate: CorporateSite }[cat];
+  const info = INFO[cat];
+  const img = IMG[cat];
+  const [page, setPage] = useState("Home");
+  const tabs = ["Home", info.svcTab, "About Us", info.bookTab, "Contact"];
+  const active = CONNECTORS.filter((c) => connectors.includes(c.id));
+  return (
+    <div className="relative h-full overflow-y-auto bg-background animate-in fade-in duration-700">
+      <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-border bg-card px-3 py-2">
+        {tabs.map((t) => <button className={cn("h-9 shrink-0 rounded-full px-3 text-sm", page === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")} key={t} onClick={() => setPage(t)} type="button">{t}</button>)}
+      </div>
+      {active.length > 0 && <div className="flex flex-wrap gap-2 bg-accent px-4 py-2 text-xs font-medium">{active.map((c) => <span className="rounded-full bg-background px-2 py-1" key={c.id}>{c.chip} active</span>)}</div>}
+      {page === "Home" && (
+        <div>
+          <div className="relative h-72 sm:h-80">
+            <img alt={info.brand} className="absolute inset-0 size-full object-cover" src={img[0]} />
+            <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
+            <div className="absolute bottom-0 p-6 text-background">
+              <p className="text-sm font-semibold">{info.brand}</p>
+              <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{info.hero}</h1>
+              <p className="mt-1 max-w-md text-sm opacity-90">{info.sub}</p>
+              <Button className="mt-4 h-11" onClick={() => setPage(info.bookTab)}>{info.bookTab} now</Button>
+            </div>
+          </div>
+          <div className="grid gap-3 p-5 sm:grid-cols-3">{img.slice(1).map((s, i) => <div className="overflow-hidden rounded-xl border border-border bg-card" key={s}><img alt={info.services[i]![0]} className="h-28 w-full object-cover" loading="lazy" src={s} /><p className="p-3 text-sm font-medium">{info.services[i]![0]}</p></div>)}</div>
+        </div>
+      )}
+      {page === info.svcTab && (
+        <div className="grid gap-4 p-5 sm:grid-cols-2">{info.services.map(([t, d], i) => <div className="overflow-hidden rounded-xl border border-border bg-card" key={t}><img alt={t} className="h-36 w-full object-cover" loading="lazy" src={img[i % 4]} /><div className="p-4"><h3 className="font-semibold">{t}</h3><p className="text-sm text-muted-foreground">{d}</p><Button className="mt-3 h-10" onClick={() => setPage(info.bookTab)} size="sm" variant="outline">Choose</Button></div></div>)}</div>
+      )}
+      {page === "About Us" && (
+        <div className="grid gap-5 p-6 sm:grid-cols-2"><img alt="About" className="h-64 w-full rounded-xl object-cover" src={img[2]} /><div><h2 className="text-2xl font-bold">About {info.brand}</h2><p className="mt-3 text-muted-foreground">{info.about}</p><div className="mt-5 grid grid-cols-3 gap-2 text-center">{[["4.9★", "Rating"], ["2k+", "Customers"], ["24/7", "Support"]].map(([a, b]) => <div className="rounded-lg bg-muted p-3" key={b}><b>{a}</b><p className="text-xs text-muted-foreground">{b}</p></div>)}</div></div></div>
+      )}
+      {page === info.bookTab && <Site />}
+      {page === "Contact" && (
+        <form className="mx-auto max-w-md space-y-3 p-6" onSubmit={(e) => { e.preventDefault(); toast.success("Message sent — we'll reply on WhatsApp"); }}>
+          <h2 className="text-2xl font-bold">Talk to us</h2>
+          <p className="text-sm text-muted-foreground">Nairobi, Kenya · +254 700 000 000</p>
+          <input className="h-11 w-full rounded-md border border-input bg-background px-3" placeholder="Your name" required />
+          <input className="h-11 w-full rounded-md border border-input bg-background px-3" placeholder="Phone or email" required />
+          <textarea className="min-h-24 w-full rounded-md border border-input bg-background p-3" placeholder="How can we help?" />
+          <Button className="h-11 w-full" type="submit">Send message</Button>
+          {connectors.includes("whatsapp") && <Button className="h-11 w-full" onClick={() => toast("Opening WhatsApp chat…")} type="button" variant="outline">💬 Order on WhatsApp</Button>}
+        </form>
+      )}
+    </div>
+  );
 }
