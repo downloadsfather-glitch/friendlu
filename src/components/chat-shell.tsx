@@ -1,6 +1,6 @@
 "use client";
 
-import { BuildingAnimation, DemoSite, SUMMARY, ThinkingBlock } from "@/components/demo-sites";
+import { BuildingAnimation, CONNECTORS, DemoSite, SUMMARY, ThinkingBlock } from "@/components/demo-sites";
 import {
   Conversation,
   ConversationContent,
@@ -54,12 +54,12 @@ const detect = (t: string): Category => {
 };
 const LABEL: Record<Category, string> = { tour: "Tour & Safari agency", portfolio: "Personal portfolio", corporate: "Company website", clinic: "Clinic & bookings", store: "Online store", custom: "Business website" };
 const QUESTIONS: Record<Category, { q: string; options: string[] }[]> = {
-  tour: [{ q: "Which trips do you sell most?", options: ["Maasai Mara", "Diani beach", "Amboseli", "Day trips"] }, { q: "How do guests pay?", options: ["20% M-Pesa deposit", "Card in USD", "Pay on arrival"] }, { q: "Main audience?", options: ["Local travellers", "International tourists", "Both"] }],
-  portfolio: [{ q: "What do you want to show?", options: ["Coding projects", "Design work", "Writing"] }, { q: "Main goal?", options: ["Get a job", "Get clients", "Internship"] }],
-  corporate: [{ q: "What should visitors do?", options: ["Request a quote", "Call us", "Book a meeting"] }, { q: "Key sections?", options: ["Services", "Fleet / projects", "Team"] }],
-  clinic: [{ q: "How do patients book?", options: ["Online calendar", "WhatsApp", "Call"] }, { q: "Services offered?", options: ["Dental", "Physio", "General checkups"] }],
-  store: [{ q: "What do you sell?", options: ["Clothes", "Electronics", "Beauty", "Food"] }, { q: "How do customers pay?", options: ["M-Pesa", "Card", "Cash on delivery"] }],
-  custom: [{ q: "What's the main goal?", options: ["Get customers", "Take bookings", "Sell online"] }, { q: "Who are your customers?", options: ["Locals", "Global", "Both"] }],
+  tour: [{ q: "Which trips do your guests love most? I'll feature them first.", options: ["Maasai Mara", "Diani beach", "Amboseli"] }, { q: "To get your safaris booked fast, where are your main pickup hubs?", options: ["Nairobi CBD", "JKIA airport", "Mombasa"] }, { q: "How would you like guests to pay you?", options: ["20% M-Pesa deposit", "Card in USD", "Pay on arrival"] }, { q: "Who are you mostly selling to?", options: ["Local travellers", "International tourists", "Both"] }],
+  portfolio: [{ q: "What work are you proudest of? I'll put it up top.", options: ["Coding projects", "Design work", "Writing"] }, { q: "What's the big goal for this site?", options: ["Land a job", "Win clients", "Get an internship"] }, { q: "How should people reach you?", options: ["Email form", "WhatsApp", "LinkedIn"] }],
+  corporate: [{ q: "When a visitor lands, what should they do first?", options: ["Request a quote", "Call us", "Book a meeting"] }, { q: "Which towns do you serve most?", options: ["Mombasa", "Kisumu", "All of Kenya"] }, { q: "What builds trust with your clients?", options: ["Client logos", "Fleet photos", "Certifications"] }],
+  clinic: [{ q: "How do patients prefer to book with you today?", options: ["Online calendar", "WhatsApp", "Phone call"] }, { q: "Which services should I list first?", options: ["Dental", "Physio", "General checkups"] }, { q: "Do you accept insurance?", options: ["NHIF / SHA", "Private insurance", "Cash & M-Pesa only"] }],
+  store: [{ q: "What do you sell? I'll set up the right catalog.", options: ["Clothes", "Electronics", "Beauty"] }, { q: "How would you like customers to pay you?", options: ["M-Pesa Till", "Paybill", "Card"] }, { q: "How do orders reach customers?", options: ["Same-day Nairobi", "Countrywide courier", "Pickup"] }],
+  custom: [{ q: "What's the main goal for your website?", options: ["Get customers", "Take bookings", "Sell online"] }, { q: "Who are your customers?", options: ["Locals", "Global", "Both"] }, { q: "How should people pay or contact you?", options: ["M-Pesa", "WhatsApp", "Email"] }],
 };
 const PLAN: Record<Category, string[]> = {
   tour: ["Home with hero photo and top packages", "Package pages with itinerary and price", "Booking form with deposit"],
@@ -123,26 +123,39 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
-export function Composer({ large, onSend, placeholder }: { large?: boolean; onSend: (text: string, mode: Mode) => void; placeholder?: string }) {
+export type Lang = "en" | "sw";
+const SW_STARTERS = ["Tovuti ya Safari na Utalii", "Boutique ya Nguo na Malipo ya M-Pesa", "Kliniki ya Madaktari na Miadi ya Wagonjwa"];
+export function Composer({ large, onSend, placeholder, locked, onTopUp, chips = [], onLang }: { large?: boolean; onSend: (text: string, mode: Mode) => void; placeholder?: string; locked?: boolean; onTopUp?: () => void; chips?: string[]; onLang?: (l: Lang) => void }) {
   const [value, setValue] = useState("");
   const [mode, setMode] = useState<Mode>("plan");
   const [sending, setSending] = useState(false);
+  const [lang, setLangRaw] = useState<Lang>("en");
+  const setLang = (l: Lang) => { setLangRaw(l); onLang?.(l); try { sessionStorage.setItem("friendlu-lang", l); } catch { /* ignore */ } };
+  useEffect(() => { try { if (sessionStorage.getItem("friendlu-lang") === "sw") { setLangRaw("sw"); onLang?.("sw"); } } catch { /* ignore */ } // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const ref = useRef<HTMLTextAreaElement>(null);
+  const ph = lang === "sw" ? "Eleza tovuti au programu ya biashara unayotaka kuunda leo..." : placeholder ?? "Ask anything, or describe what you want to build...";
   return (
+    <div>
     <div className={cn("rounded-[26px] p-[2px] transition-all", sending && "animate-rainbow shadow-lg")}>
     <PromptInput
       className="rounded-[24px] border-border bg-card shadow-[0_16px_50px_var(--composer-shadow)] [&_[data-slot=input-group]]:rounded-[24px]"
       onSubmit={({ text }) => {
         const t = text.trim();
-        if (!t) return;
+        if (!t || locked) return;
         setSending(true);
         setTimeout(() => setSending(false), 1200);
         onSend(t, mode);
         setValue("");
       }}
     >
-
-      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} onChange={(e) => setValue(e.target.value)} placeholder={placeholder ?? "Ask anything, or describe what you want to build..."} ref={ref} value={value} />
+      {(chips.length > 0 || locked) && (
+        <div className="flex w-full flex-wrap gap-1.5 px-4 pt-3">
+          {locked && <span className="rounded-full bg-chart-4/20 px-3 py-1 text-xs font-semibold text-foreground">⚠️ Credits depleted · 0 credits left</span>}
+          {chips.map((c) => <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium" key={c}>{c}</span>)}
+        </div>
+      )}
+      <PromptInputTextarea aria-label="Message Friendlu AI" className={cn("px-5 text-base", large ? "min-h-28 pt-5" : "min-h-16")} disabled={locked} onChange={(e) => setValue(e.target.value)} placeholder={locked ? "Top up credits to keep building…" : ph} ref={ref} value={value} />
       <PromptInputFooter className="px-3 pb-3">
         <PromptInputTools>
           <PromptInputActionMenu>
@@ -154,14 +167,21 @@ export function Composer({ large, onSend, placeholder }: { large?: boolean; onSe
             </PromptInputActionMenuContent>
           </PromptInputActionMenu>
           <ModeSwitch mode={mode} onChange={setMode} />
+          <div className="flex rounded-full bg-muted p-0.5 text-xs font-semibold" aria-label="Language">
+            {(["en", "sw"] as const).map((l) => <button aria-pressed={lang === l} className={cn("h-7 rounded-full px-2.5 uppercase", lang === l && "bg-background shadow-sm")} key={l} onClick={() => setLang(l)} type="button">{l}</button>)}
+          </div>
         </PromptInputTools>
-        {value.trim() ? (
+        {locked ? (
+          <Button className="h-10 rounded-full" onClick={onTopUp} type="button">Top up credits to continue</Button>
+        ) : value.trim() ? (
           <PromptInputSubmit className="rounded-full bg-primary text-primary-foreground"><ArrowUp /></PromptInputSubmit>
         ) : (
           <PromptInputButton aria-label="Record voice" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"><Mic /></PromptInputButton>
         )}
       </PromptInputFooter>
     </PromptInput>
+    </div>
+    {lang === "sw" && large && <div className="mt-3 flex flex-wrap justify-center gap-2">{SW_STARTERS.map((t) => <Button className="h-10 rounded-full" key={t} onClick={() => setValue(t)} size="sm" type="button" variant="outline">{t}</Button>)}</div>}
     </div>
   );
 }
@@ -278,27 +298,36 @@ function PublishSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-function QuestionCard({ category, onDone }: { category: Category; onDone: (a: string[]) => void }) {
+function QuestionCard({ category, onDone, lang }: { category: Category; onDone: (a: string[]) => void; lang: Lang }) {
   const qs = QUESTIONS[category];
+  const [i, setI] = useState(0);
   const [picks, setPicks] = useState<string[]>(() => qs.map(() => ""));
-  const set = (i: number, v: string) => setPicks((p) => p.map((x, j) => (j === i ? v : x)));
+  const set = (v: string) => setPicks((p) => p.map((x, j) => (j === i ? v : x)));
+  const q = qs[i]!;
+  const last = i === qs.length - 1;
+  const next = () => (last ? onDone(picks.map((p) => p || "Skipped")) : setI(i + 1));
   return (
-    <div className="mt-3 space-y-4 rounded-2xl border border-border bg-card p-4">
-      {qs.map((q, i) => (
-        <div key={q.q}>
-          <p className="mb-2 text-sm font-semibold">{q.q}</p>
-          <div className="flex flex-wrap gap-2">
-            {q.options.map((o) => <Button className="h-11" key={o} onClick={() => set(i, o)} type="button" variant={picks[i] === o ? "default" : "outline"}>{o}</Button>)}
-          </div>
-          <input aria-label={`Custom answer: ${q.q}`} className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm" onChange={(e) => set(i, e.target.value)} placeholder="Custom…" value={q.options.includes(picks[i] ?? "") ? "" : picks[i]} />
-        </div>
-      ))}
-      <Button className="h-11" disabled={picks.some((p) => !p.trim())} onClick={() => onDone(picks)}><Check /> Create my plan</Button>
+    <div className="mt-3 rounded-2xl border border-border bg-card p-4">
+      <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+        <span>{lang === "sw" ? `Hatua ${i + 1} kati ya ${qs.length}` : `Step ${i + 1} of ${qs.length}`}</span>
+        <div className="flex gap-1">{qs.map((_, j) => <span className={cn("h-1.5 w-6 rounded-full", j <= i ? "bg-primary" : "bg-muted")} key={j} />)}</div>
+      </div>
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300" key={i}>
+        {lang === "sw" && <p className="mb-1 text-xs font-medium text-primary">Tuambie kidogo kuhusu biashara yako...</p>}
+        <p className="mb-3 text-base font-semibold">{q.q}</p>
+        <div className="flex flex-wrap gap-2">{q.options.map((o) => <Button className="h-11" key={o} onClick={() => set(o)} type="button" variant={picks[i] === o ? "default" : "outline"}>{o}</Button>)}</div>
+        <input aria-label={`Custom answer: ${q.q}`} className="mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm" onChange={(e) => set(e.target.value)} placeholder="Type custom..." value={q.options.includes(picks[i] ?? "") ? "" : picks[i]} />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button className="h-11" disabled={i === 0} onClick={() => setI(i - 1)} type="button" variant="ghost"><ChevronLeft /> Back</Button>
+        <Button className="h-11" onClick={() => { set(""); next(); }} type="button" variant="ghost">Skip</Button>
+        <Button className="ml-auto h-11" disabled={!picks[i]?.trim()} onClick={next} type="button">{last ? <><Check /> Save & Continue</> : <>Next <ChevronRight /></>}</Button>
+      </div>
     </div>
   );
 }
 
-function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak }: { messages: Msg[]; onOffer: (build: boolean) => void; onAnswers: (a: string[]) => void; onCheck: () => void; onScan: () => void; onTweak: (p: string) => void }) {
+function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak, lang }: { lang: Lang; messages: Msg[]; onOffer: (build: boolean) => void; onAnswers: (a: string[]) => void; onCheck: () => void; onScan: () => void; onTweak: (p: string) => void }) {
   return (
     <Conversation className="min-h-0">
       <ConversationContent className="mx-auto w-full max-w-3xl gap-7 px-4 py-8 sm:px-6">
@@ -307,7 +336,7 @@ function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak }
             <MessageContent className="text-base leading-7">
               <MessageResponse>{m.text}</MessageResponse>
               {m.thinking && <ThinkingBlock category={m.thinking} />}
-              {m.questions && <QuestionCard category={m.questions} onDone={onAnswers} />}
+              {m.questions && <QuestionCard category={m.questions} lang={lang} onDone={onAnswers} />}
               {m.offer && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button className="h-11" onClick={() => onOffer(true)}><Rocket /> Start building app</Button>
@@ -373,6 +402,16 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
   const [projectName, setProjectName] = useState("Nairobi Electronics Shop");
   const [projectNameDraft, setProjectNameDraft] = useState("Nairobi Electronics Shop");
   const [renaming, setRenaming] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
+  const [credits, setCredits] = useState(3);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+  const [connOpen, setConnOpen] = useState(false);
+  const [connectors, setConnectors] = useState<string[]>([]);
+  const [inspect, setInspect] = useState(false);
+  const [editEl, setEditEl] = useState<{ el: HTMLElement; name: string } | null>(null);
+  const [badge, setBadge] = useState<{ x: number; y: number } | null>(null);
+  const hoverRef = useRef<HTMLElement | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [status, setStatusRaw] = useState<Status>("planning");
   const building = status !== "planning";
   const [category, setCategory] = useState<Category>(() => detect(initialPrompt));
@@ -413,7 +452,13 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
     return msg("assistant", "Noted. I've added that to your plan. **Ready to build?**", true);
   };
 
-  const send = (text: string, mode: Mode = "plan") => setMessages((c) => [...c, msg("user", text), reply(text, mode)]);
+  const send = (text: string, mode: Mode = "plan") => {
+    if (credits <= 0) { setTopUpOpen(true); return; }
+    const left = credits - 1;
+    setCredits(left);
+    setMessages((c) => [...c, msg("user", text), reply(text, mode)]);
+    if (left === 0) toast.warning("That was your last free credit — top up to keep building");
+  };
 
   const onAnswers = (answers: string[]) => {
     setMessages((c) => [
@@ -446,13 +491,42 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
 
   const addActionMessage = (text: string) => setMessages((current) => [...current, msg("assistant", text)]);
 
+  const SEL = "h1,h2,h3,p,button,img,li,label";
+  const clearHover = () => { hoverRef.current?.classList.remove("inspect-hover"); hoverRef.current = null; setBadge(null); };
+  const onInspectHover = (e: React.MouseEvent) => {
+    if (!inspect || editEl) return;
+    const el = (e.target as HTMLElement).closest(SEL) as HTMLElement | null;
+    if (!el || el === hoverRef.current || !previewRef.current?.contains(el) || el.closest("[data-edit-card]")) return;
+    clearHover(); el.classList.add("inspect-hover"); hoverRef.current = el;
+    const r = el.getBoundingClientRect(), p = previewRef.current.getBoundingClientRect();
+    setBadge({ x: Math.max(0, r.left - p.left), y: Math.max(0, r.top - p.top - 22) });
+  };
+  const onInspectClick = (e: React.MouseEvent) => {
+    if (!inspect || (e.target as HTMLElement).closest("[data-edit-card]")) return;
+    const el = (e.target as HTMLElement).closest(SEL) as HTMLElement | null;
+    if (!el) return;
+    e.preventDefault(); e.stopPropagation();
+    const t = el.tagName;
+    const name = t === "H1" ? "Hero Headline" : t === "IMG" ? "Photo" : t === "BUTTON" ? "Button" : /H[23]/.test(t) ? "Section Title" : t === "LI" ? "List item" : "Text block";
+    setEditEl({ el, name: `${name}${el.textContent?.trim() ? ` · “${el.textContent.trim().slice(0, 28)}”` : ""}` });
+  };
+  const applyEdit = (v: string) => {
+    const el = editEl?.el; if (!el) return;
+    if (el.tagName === "IMG") (el as HTMLImageElement).src = "https://images.unsplash.com/photo-1523805009345-7448845a9e53?auto=format&fit=crop&w=900&q=70";
+    else if (/badge|till/i.test(v)) el.insertAdjacentHTML("beforeend", ' <span style="margin-left:6px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);padding:2px 8px;font-size:11px">M-Pesa Till 123456</span>');
+    else if (/KES [\d,]+/.test(v) && /KES [\d,]+/.test(el.textContent ?? "")) el.textContent = (el.textContent ?? "").replace(/KES [\d,]+/, v.match(/KES [\d,]+/)![0]);
+    else el.textContent = v.replace(/^change (text|headline) to /i, "");
+    el.classList.remove("inspect-hover"); el.classList.add("edit-pulse"); setTimeout(() => el.classList.remove("edit-pulse"), 1000);
+    setEditEl(null); toast.success("Edit applied to preview");
+  };
+
   const chatColumn = (
     <>
-      <ChatMessages key={threadId} messages={messages} onAnswers={onAnswers} onCheck={onCheck} onOffer={onOffer} onScan={onScan} onTweak={(p) => send(p)} />
+      <ChatMessages key={threadId} lang={lang} messages={messages} onAnswers={onAnswers} onCheck={onCheck} onOffer={onOffer} onScan={onScan} onTweak={(p) => send(p)} />
       <div className="shrink-0 bg-background px-3 pb-3 sm:px-6 sm:pb-5">
         <div className={cn("mx-auto", status === "planning" ? "max-w-2xl" : "max-w-3xl")}>
           {status === "built" && <div className="mb-2"><PillStrip items={TWEAKS[category]} onPick={(p) => send(p)} /></div>}
-          <Composer onSend={send} />
+          <Composer chips={CONNECTORS.filter((c) => connectors.includes(c.id)).map((c) => c.chip)} locked={credits <= 0} onLang={setLang} onSend={send} onTopUp={() => setTopUpOpen(true)} />
         </div>
         {!building && <p className="mt-2 text-center text-xs text-muted-foreground">Friendlu AI can make mistakes. Check important information.</p>}
       </div>
@@ -480,7 +554,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem onSelect={() => setRenaming(true)}><Pencil /> Rename project</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => addActionMessage("Tools & Integrations is ready for this project. Choose a tool to add when the catalog opens.")}><Wrench /> Tools & Integrations</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setConnOpen(true)}><Wrench /> Tools & Integrations</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => addActionMessage(`Duplicated **${projectName}** as a new mock project.`)}><Copy /> Duplicate</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => addActionMessage("Delete is disabled in this prototype, so your project is still safe.")}><Trash2 /> Delete project</DropdownMenuItem>
@@ -529,18 +603,21 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                     ["mobile", Smartphone, "Mobile preview"],
                   ] as const).map(([device, Icon, label]) => <Button aria-label={label} aria-pressed={previewDevice === device} className="size-8" key={device} onClick={() => setPreviewDevice(device)} size="icon-sm" variant={previewDevice === device ? "secondary" : "ghost"}><Icon /></Button>)}
                 </div>
+                <Button aria-label="Click to edit" aria-pressed={inspect} onClick={() => setInspect((v) => !v)} size="icon-sm" variant={inspect ? "default" : "ghost"}><MousePointer2 /></Button>
                 <Button aria-label="Reload preview" onClick={() => setReloadKey((k) => k + 1)} size="icon-sm" variant="ghost"><RotateCw /></Button>
               </div>
               <div className="min-h-0 flex-1 overflow-hidden md:flex md:items-center md:justify-center md:overflow-auto md:rounded-xl md:border md:border-border md:bg-secondary md:p-4 md:shadow-sm">
                 <div className={cn("relative h-full min-h-0 overflow-hidden bg-background transition-[width,border-radius] duration-200", previewDevice === "desktop" && "w-full", previewDevice === "tablet" && "w-[768px] max-w-full rounded-[24px] border-[10px] border-foreground/80 shadow-xl", previewDevice === "mobile" && "w-[390px] max-w-full rounded-[34px] border-[8px] border-foreground/80 pb-2 shadow-xl")}>
                   {previewDevice === "mobile" && <div className="relative flex h-8 items-center justify-between bg-background px-5 text-[10px] font-semibold"><span>9:41</span><span className="absolute left-1/2 top-0 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-foreground" /><span>5G&nbsp; 100%</span></div>}
-                  <div className={cn("h-full min-h-0", previewDevice === "mobile" && "h-[calc(100%-2rem)]")}>{status === "building" ? <BuildingAnimation /> : <DemoSite category={category} key={reloadKey} />}</div>
+                  <div className={cn("relative h-full min-h-0", previewDevice === "mobile" && "h-[calc(100%-2rem)]")} onClickCapture={onInspectClick} onMouseLeave={clearHover} onMouseOver={onInspectHover} ref={previewRef}>
+                    {inspect && badge && <span className="pointer-events-none absolute z-30 rounded bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground" style={{ left: badge.x, top: badge.y }}>✏️ Edit element</span>}
+                    {editEl && <EditCard name={editEl.name} onApply={applyEdit} onClose={() => setEditEl(null)} />}{status === "building" ? <BuildingAnimation /> : <DemoSite category={category} connectors={connectors} key={reloadKey} />}</div>
                 </div>
               </div>
               <div className="flex h-16 shrink-0 items-center gap-1 border-t border-border bg-card px-3 md:hidden">
                 <Button aria-label="Reload" className="size-11" onClick={() => setReloadKey((k) => k + 1)} size="icon" variant="ghost"><RotateCw /></Button>
                 <Button aria-label="Edit" className="size-11" onClick={() => setMobileView("chat")} size="icon" variant="ghost"><Edit3 /></Button>
-                <Button aria-label="Pointer" className="size-11" size="icon" variant="ghost"><MousePointer2 /></Button>
+                <Button aria-label="Click to edit" className="size-11" onClick={() => setInspect((v) => !v)} size="icon" variant={inspect ? "default" : "ghost"}><MousePointer2 /></Button>
                 <Button className="ml-auto h-11 bg-blue-600 px-5 text-white hover:bg-blue-700" onClick={() => setPublishOpen(true)}><Rocket /> Publish</Button>
               </div>
             </div>
@@ -548,6 +625,66 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
         )}
       </section>
       {publishOpen && <PublishSheet onClose={() => setPublishOpen(false)} />}
+      {topUpOpen && <TopUpSheet onClose={() => setTopUpOpen(false)} onPaid={(n, kes) => { setCredits((c) => c + n); setTopUpOpen(false); toast.success(`KES ${kes} received via M-Pesa · ${n} credits added`); setMessages((c) => [...c, msg("assistant", `⚡ **${n} credits added.** Your prompt bar is unlocked — let's keep building!`)]); }} />}
+      {connOpen && <ConnectorsSheet active={connectors} onClose={() => setConnOpen(false)} onToggle={(id) => setConnectors((c) => { const on = c.includes(id); toast.success(on ? "Connector removed" : "Connector added to your app"); return on ? c.filter((x) => x !== id) : [...c, id]; })} />}
     </main>
+  );
+}
+
+function EditCard({ name, onApply, onClose }: { name: string; onApply: (v: string) => void; onClose: () => void }) {
+  const [v, setV] = useState("");
+  const [busy, setBusy] = useState(false);
+  const go = (t: string) => { if (!t.trim()) return; setBusy(true); setTimeout(() => onApply(t), 1000); };
+  return (
+    <div className="absolute inset-x-3 bottom-3 z-40 rounded-2xl border border-border bg-card p-4 shadow-xl animate-in slide-in-from-bottom-4" data-edit-card>
+      <div className="mb-2 flex items-center justify-between"><p className="truncate text-sm font-semibold">✏️ Edit? {name}</p><Button aria-label="Close" onClick={onClose} size="icon-sm" variant="ghost"><X /></Button></div>
+      <input autoFocus className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm" onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go(v)} placeholder="What would you like to change in this section?" value={v} />
+      <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">{["Change price to KES 4,500", "Add M-Pesa Till Badge", "Change photo to Maasai Mara sunset", "Karibu! Book your adventure"].map((s) => <Button className="h-9 shrink-0 rounded-full" key={s} onClick={() => go(s)} size="sm" variant="outline">{s}</Button>)}</div>
+      <Button className={cn("mt-3 h-11 w-full", busy && "animate-pulse")} disabled={busy || !v.trim()} onClick={() => go(v)}>{busy ? "Applying…" : "Apply Edit"}</Button>
+    </div>
+  );
+}
+
+function TopUpSheet({ onClose, onPaid }: { onClose: () => void; onPaid: (credits: number, kes: number) => void }) {
+  const packs = [{ n: "Quick Booster", c: 35, k: 250 }, { n: "Launch Pack", c: 100, k: 600 }, { n: "Pro Rush", c: 300, k: 1500 }];
+  const [pick, setPick] = useState(0);
+  const [phone, setPhone] = useState("0712 345 678");
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (count === null) return;
+    if (count === 0) { onPaid(packs[pick]!.c, packs[pick]!.k); return; }
+    const t = setTimeout(() => setCount(count - 1), 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-overlay sm:items-center" onClick={onClose}>
+      <div aria-label="Top up credits" className="w-full max-w-md rounded-t-2xl border border-border bg-card p-6 shadow-xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()} role="dialog">
+        <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Top up credits to continue</h2><Button aria-label="Close" onClick={onClose} size="icon" variant="ghost"><X /></Button></div>
+        <p className="mt-1 text-sm text-muted-foreground">You've used your 3 free prompts. Pick a pack — paid in seconds with M-Pesa.</p>
+        <div className="mt-4 space-y-2">{packs.map((p, i) => <button className={cn("flex h-14 w-full items-center justify-between rounded-xl border px-4 text-left", pick === i ? "border-primary bg-accent" : "border-border")} key={p.n} onClick={() => setPick(i)} type="button"><span><b>{p.n}</b><span className="block text-xs text-muted-foreground">{p.c} credits</span></span><b>KES {p.k.toLocaleString()}</b></button>)}</div>
+        <label className="mt-4 block text-sm font-medium" htmlFor="topup-phone">Safaricom M-Pesa number</label>
+        <input className="mt-1 h-11 w-full rounded-md border border-input bg-background px-3" id="topup-phone" onChange={(e) => setPhone(e.target.value)} value={phone} />
+        <Button className="mt-4 h-12 w-full" disabled={count !== null || phone.replace(/\D/g, "").length < 10} onClick={() => setCount(3)}>{count !== null ? `STK push sent — enter PIN on your phone… ${count}s` : `Pay KES ${packs[pick]!.k.toLocaleString()} with M-Pesa`}</Button>
+        <p className="mt-2 text-center text-xs text-muted-foreground">Demo only — no real money is charged.</p>
+      </div>
+    </div>
+  );
+}
+
+function ConnectorsSheet({ active, onClose, onToggle }: { active: string[]; onClose: () => void; onToggle: (id: string) => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-overlay" onClick={onClose}>
+      <div aria-label="Connectors" className="h-full w-full max-w-md overflow-y-auto bg-card p-5 shadow-xl animate-in slide-in-from-right" onClick={(e) => e.stopPropagation()} role="dialog">
+        <div className="mb-1 flex items-center justify-between"><h2 className="text-lg font-semibold">Tools & Integrations</h2><Button aria-label="Close" onClick={onClose} size="icon" variant="ghost"><X /></Button></div>
+        <p className="mb-4 text-sm text-muted-foreground">Add connectors and Friendlu wires them into your app.</p>
+        <div className="space-y-3">{CONNECTORS.map((c) => { const on = active.includes(c.id); return (
+          <div className={cn("rounded-xl border p-4", on ? "border-primary bg-accent" : "border-border")} key={c.id}>
+            <div className="flex items-center justify-between gap-2"><span className="font-medium">{c.chip.split(" ")[0]} {c.name}</span><Button className="h-10 shrink-0" onClick={() => onToggle(c.id)} size="sm" variant={on ? "outline" : "default"}>{on ? <><Check /> Added</> : "Add to App"}</Button></div>
+            {on && <input className="mt-3 h-11 w-full rounded-md border border-input bg-background px-3 text-sm" placeholder={`${c.field} (stored securely later)`} type="password" />}
+          </div>
+        ); })}</div>
+      </div>
+    </div>
   );
 }
