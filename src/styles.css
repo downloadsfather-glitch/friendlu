@@ -172,3 +172,7 @@
 
 @keyframes liquid { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30%,20%) scale(1.2); } 66% { transform: translate(-20%,30%) scale(0.9); } }
 @utility liquid-blob { animation: liquid 9s ease-in-out infinite; }
+
+.inspect-hover { outline: 2px dashed var(--primary) !important; outline-offset: 2px; cursor: crosshair !important; }
+.edit-pulse { animation: edit-pulse 1s ease-out; }
+@keyframes edit-pulse { 0% { box-shadow: 0 0 0 0 var(--primary); } 100% { box-shadow: 0 0 0 14px transparent; } }
