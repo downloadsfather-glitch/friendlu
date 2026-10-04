@@ -346,7 +346,7 @@ function ChatMessages({ messages, onOffer, onAnswers, onCheck, onScan, onTweak, 
         {messages.map((m) => (
           <Message from={m.role} key={m.id}>
             <MessageContent className="text-base leading-7">
-              <MessageResponse>{m.text}</MessageResponse>
+              {m.text.startsWith("🔨") ? <AgentThinking text={m.text.replace("🔨 ", "")} /> : <MessageResponse>{m.text}</MessageResponse>}
               {m.thinking && <ThinkingBlock category={m.thinking} />}
               {m.questions && <QuestionCard category={m.questions} lang={lang} onDone={onAnswers} />}
               {m.offer && (
