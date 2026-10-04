@@ -101,12 +101,30 @@ function Dashboard() {
               ))}
               <Button className="ml-auto h-10" onClick={() => go("/templates")} variant="link">Browse all →</Button>
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {shown.map((c) => (
-                <button className="rounded-xl border border-border bg-background p-3 text-left text-sm font-medium hover:border-primary" key={c.id} onClick={() => tab === "templates" ? start(`Build a ${c.name}`) : go(`/chat/${c.id}`)} type="button">
-                  <div className="mb-2 h-16 rounded-lg bg-secondary" />{c.name}
-                </button>
-              ))}
+            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {shown.map((c, i) => {
+                const t = THUMBS[i % THUMBS.length];
+                return (
+                  <button className="group overflow-hidden rounded-2xl border border-border bg-background text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl" key={c.id} onClick={() => tab === "templates" ? start(`Build a ${c.name}`) : go(`/chat/${c.id}`)} type="button">
+                    <div className="flex items-center gap-1.5 border-b border-border bg-muted px-3 py-2">
+                      <span className="size-2.5 rounded-full bg-destructive/70" /><span className="size-2.5 rounded-full bg-chart-4" /><span className="size-2.5 rounded-full bg-chart-2" />
+                      <span className="ml-2 truncate rounded bg-background px-2 py-0.5 text-[11px] text-muted-foreground">{t.url}</span>
+                    </div>
+                    <div className="relative h-36 overflow-hidden">
+                      <img alt="" className="size-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" src={t.img} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-2 left-3 right-3 flex flex-wrap gap-1.5">
+                        <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-black">{t.a}</span>
+                        <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-semibold text-white">{t.b}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+                      <span className="truncate text-sm font-semibold">{c.name}</span>
+                      <span className="shrink-0 text-xs font-semibold text-primary">{tab === "templates" ? "Use template →" : "Open →"}</span>
+                    </div>
+                  </button>
+                );
+              })}
               {shown.length === 0 && <p className="p-3 text-sm text-muted-foreground">No matches.</p>}
             </div>
           </div>
