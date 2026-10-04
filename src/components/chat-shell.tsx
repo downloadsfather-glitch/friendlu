@@ -702,3 +702,34 @@ function ConnectorsSheet({ active, onClose, onToggle }: { active: string[]; onCl
     </div>
   );
 }
+
+const AGENT_STEPS = [
+  "Analyzing business requirements & brand archetype",
+  "Drafting layouts & mobile touch targets",
+  "Adding Kenya-ready payments (M-Pesa STK & WhatsApp)",
+  "Finalizing responsive preview",
+];
+
+function AgentThinking({ text }: { text: string }) {
+  const [n, setN] = useState(1);
+  useEffect(() => {
+    if (n >= AGENT_STEPS.length) return;
+    const t = setTimeout(() => setN((v) => v + 1), 900);
+    return () => clearTimeout(t);
+  }, [n]);
+  const done = n >= AGENT_STEPS.length;
+  return (
+    <div className="space-y-2">
+      <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs text-primary">✦ Friendlu agent {done ? "finished" : "working"}</span>
+      <p className={done ? "" : "agent-rainbow"}>{text}</p>
+      <ul className="space-y-1 text-sm">
+        {AGENT_STEPS.slice(0, n).map((s, i) => (
+          <li className="step-in flex items-center gap-2" key={s}>
+            <span className={i < n - 1 || done ? "text-chart-2" : "inline-block animate-spin text-primary"}>{i < n - 1 || done ? "✓" : "✦"}</span>
+            <span className={i === n - 1 && !done ? "agent-rainbow" : "text-muted-foreground"}>{s}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
