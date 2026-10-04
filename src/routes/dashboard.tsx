@@ -139,3 +139,12 @@ function Dashboard() {
     </div>
   );
 }
+
+const U = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=700&q=70`;
+const THUMBS = [
+  { url: "savannahmara.co.ke", img: U("photo-1516426122078-c23e76319801"), a: "KES 48,000", b: "M-Pesa Express" },
+  { url: "kikoapparel.co.ke", img: U("photo-1441986300917-64674bd600d8"), a: "KES 3,200", b: "Verified STK" },
+  { url: "swiftfreight.co.ke", img: U("photo-1601584115197-04ecc0da31d7"), a: "Nairobi ➔ Mombasa", b: "Instant Quote" },
+  { url: "apexclinic.co.ke", img: U("photo-1519494026892-80bbd2d6fd0d"), a: "KES 2,500", b: "Book Consultation" },
+  { url: "brianotieno.studio", img: U("photo-1497366216548-37526070297c"), a: "UI/UX Portfolio", b: "Hire Me" },
+];
