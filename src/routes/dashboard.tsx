@@ -84,13 +84,15 @@ function Dashboard() {
           <Button aria-label="Open menu" onClick={() => setOpen(true)} size="icon" variant="ghost"><Menu /></Button>
           <BrandMark />
         </header>
-        <section className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-10 text-center">
+        <section className="relative mx-auto flex min-h-[85vh] w-full max-w-3xl shrink-0 flex-col items-center justify-center px-4 py-10 text-center">
           <button className="rounded-full border border-border bg-card px-4 py-1.5 text-sm hover:border-primary" onClick={() => setToolsOpen(true)} type="button">✨ New: M-Pesa Express & WhatsApp Commerce live →</button>
           <h1 className="mt-6 text-4xl font-bold sm:text-5xl">Got an idea, Dfather?</h1>
           <div className="mt-8 w-full text-left"><Composer large onSend={start} placeholder="Ask Friendlu to create an app to..." /></div>
           <div className="mt-4 w-full"><PillStrip items={starters} onPick={start} /></div>
+          <button className="mt-10 animate-bounce text-sm text-muted-foreground hover:text-foreground" onClick={() => document.getElementById("explorer")?.scrollIntoView({ behavior: "smooth" })} type="button">Scroll to view your projects & templates ↓</button>
         </section>
-        <section className="relative mx-auto mb-4 w-full max-w-5xl px-4">
+        <section className="relative mx-auto w-full max-w-5xl px-4 pb-16 pt-12" id="explorer">
+          <h2 className="mb-4 text-xl font-semibold">Projects & Templates</h2>
           <div className="rounded-2xl border border-border bg-card p-3 shadow-lg">
             <div className="flex flex-wrap items-center gap-2">
               <input className="h-10 min-w-40 flex-1 rounded-lg border border-input bg-background px-3 text-sm" id="project-search" onChange={(e) => setQ(e.target.value)} placeholder="Search projects" value={q} />

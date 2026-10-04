@@ -35,7 +35,7 @@ import {
   Plus, RotateCw, Rocket, Search, Settings, Smartphone, Sun, Tablet, Trash2, UserRound, Wrench, X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Eye, LogOut, ScanSearch } from "lucide-react";
+import { ExternalLink, Eye, LogOut, ScanSearch } from "lucide-react";
 import { toast } from "sonner";
 
 type Mode = "plan" | "build";
@@ -90,11 +90,23 @@ const isBuildIntent = (t: string) => /\b(build|app|website|site|landing|dashboar
 let nextId = 1;
 const msg = (role: Msg["role"], text: string, offer = false): Msg => ({ id: nextId++, role, text, offer });
 
+export function LogoIcon({ className = "size-8" }: { className?: string }) {
+  return (
+    <svg aria-hidden className={cn("shrink-0 drop-shadow-sm", className)} viewBox="0 0 64 64">
+      <defs><linearGradient id="fl-g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor="#FF6A00" /><stop offset="1" stopColor="#FFB020" /></linearGradient></defs>
+      <rect fill="url(#fl-g)" height="64" rx="16" width="64" />
+      <path d="M32 10l5.5 16.5L54 32l-16.5 5.5L32 54l-5.5-16.5L10 32l16.5-5.5z" fill="#fff" />
+      <circle cx="48" cy="16" fill="#fff" opacity=".85" r="4" />
+    </svg>
+  );
+}
+
 export function BrandMark() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm">F</div>
-      <span className="text-base font-semibold">Friendlu AI</span>
+    <div className="flex h-8 shrink-0 items-center gap-2.5">
+      <LogoIcon />
+      <span className="whitespace-nowrap text-base font-bold tracking-tight">Friendlu</span>
+      <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-primary">AI</span>
     </div>
   );
 }
@@ -174,9 +186,9 @@ export function Composer({ large, onSend, placeholder, locked, onTopUp, chips = 
         {locked ? (
           <Button className="h-10 rounded-full" onClick={onTopUp} type="button">Top up credits to continue</Button>
         ) : value.trim() ? (
-          <PromptInputSubmit className="rounded-full bg-primary text-primary-foreground"><ArrowUp /></PromptInputSubmit>
+          <PromptInputSubmit className="btn-glow rounded-full"><ArrowUp /></PromptInputSubmit>
         ) : (
-          <PromptInputButton aria-label="Record voice" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"><Mic /></PromptInputButton>
+          <PromptInputButton aria-label="Record voice" className="btn-glow rounded-full"><Mic /></PromptInputButton>
         )}
       </PromptInputFooter>
     </PromptInput>
@@ -193,7 +205,7 @@ export function PillStrip({ items, onPick }: { items: string[]; onPick: (p: stri
     <div className="flex items-center gap-1">
       <Button aria-label="Scroll suggestions left" className="shrink-0 rounded-full" onClick={() => by(-180)} size="icon-sm" type="button" variant="ghost"><ChevronLeft /></Button>
       <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto" ref={ref}>
-        {items.map((p) => <Button className="h-9 shrink-0 rounded-full" key={p} onClick={() => onPick(p)} size="sm" type="button" variant="outline">{p}</Button>)}
+        {items.map((p) => <Button className="h-9 shrink-0 rounded-full transition hover:scale-[1.03] hover:border-primary active:scale-95" key={p} onClick={() => onPick(p)} size="sm" type="button" variant="outline">{p}</Button>)}
       </div>
       <Button aria-label="Scroll suggestions right" className="shrink-0 rounded-full" onClick={() => by(180)} size="icon-sm" type="button" variant="ghost"><ChevronRight /></Button>
     </div>
@@ -605,9 +617,10 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                 </div>
                 <Button aria-label="Click to edit" aria-pressed={inspect} onClick={() => setInspect((v) => !v)} size="icon-sm" variant={inspect ? "default" : "ghost"}><MousePointer2 /></Button>
                 <Button aria-label="Reload preview" onClick={() => setReloadKey((k) => k + 1)} size="icon-sm" variant="ghost"><RotateCw /></Button>
+                <Button aria-label="Open in new tab" onClick={() => window.open(`/p/${category}`, "_blank")} size="icon-sm" variant="ghost"><ExternalLink /></Button>
               </div>
               <div className="min-h-0 flex-1 overflow-hidden md:flex md:items-center md:justify-center md:overflow-auto md:rounded-xl md:border md:border-border md:bg-secondary md:p-4 md:shadow-sm">
-                <div className={cn("relative h-full min-h-0 overflow-hidden bg-background transition-[width,border-radius] duration-200", previewDevice === "desktop" && "w-full", previewDevice === "tablet" && "w-[768px] max-w-full rounded-[24px] border-[10px] border-foreground/80 shadow-xl", previewDevice === "mobile" && "w-[390px] max-w-full rounded-[34px] border-[8px] border-foreground/80 pb-2 shadow-xl")}>
+                <div className={cn("preview-light relative h-full min-h-0 overflow-hidden bg-background transition-[width,border-radius] duration-200", previewDevice === "desktop" && "w-full", previewDevice === "tablet" && "w-[768px] max-w-full rounded-[24px] border-[10px] border-foreground/80 shadow-xl", previewDevice === "mobile" && "w-[390px] max-w-full rounded-[34px] border-[8px] border-foreground/80 pb-2 shadow-xl")}>
                   {previewDevice === "mobile" && <div className="relative flex h-8 items-center justify-between bg-background px-5 text-[10px] font-semibold"><span>9:41</span><span className="absolute left-1/2 top-0 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-foreground" /><span>5G&nbsp; 100%</span></div>}
                   <div className={cn("relative h-full min-h-0", previewDevice === "mobile" && "h-[calc(100%-2rem)]")} onClickCapture={onInspectClick} onMouseLeave={clearHover} onMouseOver={onInspectHover} ref={previewRef}>
                     {inspect && badge && <span className="pointer-events-none absolute z-30 rounded bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground" style={{ left: badge.x, top: badge.y }}>✏️ Edit element</span>}
@@ -618,6 +631,7 @@ export function ChatShell({ initialPrompt = "", threadId }: { initialPrompt?: st
                 <Button aria-label="Reload" className="size-11" onClick={() => setReloadKey((k) => k + 1)} size="icon" variant="ghost"><RotateCw /></Button>
                 <Button aria-label="Edit" className="size-11" onClick={() => setMobileView("chat")} size="icon" variant="ghost"><Edit3 /></Button>
                 <Button aria-label="Click to edit" className="size-11" onClick={() => setInspect((v) => !v)} size="icon" variant={inspect ? "default" : "ghost"}><MousePointer2 /></Button>
+                <Button aria-label="Open in new tab" className="size-11" onClick={() => window.open(`/p/${category}`, "_blank")} size="icon" variant="ghost"><ExternalLink /></Button>
                 <Button className="ml-auto h-11 bg-blue-600 px-5 text-white hover:bg-blue-700" onClick={() => setPublishOpen(true)}><Rocket /> Publish</Button>
               </div>
             </div>
