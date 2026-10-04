@@ -63,7 +63,7 @@
   --color-overlay: var(--overlay);
 }
 
-:root {
+:root, .preview-light {
   --radius: 0.5rem;
   --background: oklch(0.985 0.012 80);
   --foreground: oklch(0.2 0.02 62);
@@ -176,3 +176,5 @@
 .inspect-hover { outline: 2px dashed var(--primary) !important; outline-offset: 2px; cursor: crosshair !important; }
 .edit-pulse { animation: edit-pulse 1s ease-out; }
 @keyframes edit-pulse { 0% { box-shadow: 0 0 0 0 var(--primary); } 100% { box-shadow: 0 0 0 14px transparent; } }
+.preview-light { color-scheme: light; background: var(--background); color: var(--foreground); }
+@utility btn-glow { background-image: linear-gradient(90deg, oklch(0.69 0.2 48), oklch(0.78 0.17 70)); color: white; box-shadow: 0 4px 14px oklch(0.69 0.2 48 / 35%); transition: transform .15s, box-shadow .15s; &:hover { transform: translateY(-2px); box-shadow: 0 8px 22px oklch(0.69 0.2 48 / 45%); } &:active { transform: translateY(0); } }

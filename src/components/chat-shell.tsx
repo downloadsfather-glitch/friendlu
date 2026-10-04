@@ -174,9 +174,9 @@ export function Composer({ large, onSend, placeholder, locked, onTopUp, chips = 
         {locked ? (
           <Button className="h-10 rounded-full" onClick={onTopUp} type="button">Top up credits to continue</Button>
         ) : value.trim() ? (
-          <PromptInputSubmit className="rounded-full bg-primary text-primary-foreground"><ArrowUp /></PromptInputSubmit>
+          <PromptInputSubmit className="btn-glow rounded-full"><ArrowUp /></PromptInputSubmit>
         ) : (
-          <PromptInputButton aria-label="Record voice" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"><Mic /></PromptInputButton>
+          <PromptInputButton aria-label="Record voice" className="btn-glow rounded-full"><Mic /></PromptInputButton>
         )}
       </PromptInputFooter>
     </PromptInput>
@@ -193,7 +193,7 @@ export function PillStrip({ items, onPick }: { items: string[]; onPick: (p: stri
     <div className="flex items-center gap-1">
       <Button aria-label="Scroll suggestions left" className="shrink-0 rounded-full" onClick={() => by(-180)} size="icon-sm" type="button" variant="ghost"><ChevronLeft /></Button>
       <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto" ref={ref}>
-        {items.map((p) => <Button className="h-9 shrink-0 rounded-full" key={p} onClick={() => onPick(p)} size="sm" type="button" variant="outline">{p}</Button>)}
+        {items.map((p) => <Button className="h-9 shrink-0 rounded-full transition hover:scale-[1.03] hover:border-primary active:scale-95" key={p} onClick={() => onPick(p)} size="sm" type="button" variant="outline">{p}</Button>)}
       </div>
       <Button aria-label="Scroll suggestions right" className="shrink-0 rounded-full" onClick={() => by(180)} size="icon-sm" type="button" variant="ghost"><ChevronRight /></Button>
     </div>
